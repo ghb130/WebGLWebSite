@@ -1,0 +1,26 @@
+body{
+  background: #505050;
+}
+.BackgroundText{
+  color: #1cafff;
+  font-family: Verdana;
+  font-size: 200%;
+  text-shadow: 1px 1px 3px #000000;
+}
+@keyframes spin {
+  0% {transform: rotate(0deg);}
+  100% {transform: rotate(360deg);}
+}
+.animated {
+    animation-name: spin;
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+.box {
+    border-radius: 90px;
+    background: #73AD21;
+    padding: 20px;
+    width: 150px;
+    height: 150px;
+}
