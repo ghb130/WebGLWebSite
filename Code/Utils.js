@@ -1,3 +1,6 @@
+//==============================================================================
+//SERVER DATA ACCESS
+//==============================================================================
 function Load(Addr, Callback){
   var req = new XMLHttpRequest();
   req.onreadystatechange = function(){
@@ -8,7 +11,14 @@ function Load(Addr, Callback){
   req.open("GET", Addr, true);
   req.send();
 }
-
 function LogReq(req){
   console.log(req.responseText);
+}
+
+//==============================================================================
+//REMOVE LOADING TEXT
+//==============================================================================
+function doneLoading() {
+  var x = document.getElementById('LoadingText');
+  x.style.display = 'none';
 }

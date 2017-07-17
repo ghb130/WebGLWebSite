@@ -4,13 +4,15 @@
   <meta charset="utf-8"/>
   <link rel="stylesheet" type="text/css" href="Resources/stylesheet.css">
   <title> Test Page </title>
-
 </head>
 <body>
-  <div class="box animated"></div>
   <div>
-    <canvas id="WebGL" width="960" height="480">
+    <canvas class="fullscreen" id="WebGL" width="960" height="480">
     <p class="BackgroundText">Please use a browser that supports WebGL.</p>
+  </div>
+  <div class="Loading" id="LoadingText">
+    Loading
+    <img class="animated median" src="Resources/WheelXSmall.png">
   </div>
   <script data-main="Code/Main" src="Lib/require.js"></script>
 </body>
