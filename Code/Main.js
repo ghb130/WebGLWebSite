@@ -2,7 +2,14 @@ requirejs(["Utils", "Shader", "Engine"], main);
 function main(){
   var Engine = new EngineObj();
   Engine.init();
+<<<<<<< HEAD
   console.log("\nEngine initialization complete.\n\n");
+=======
+  console.log("Done with init");
+  console.log(Engine.Shaders.Standard.Uniforms);
+  console.log(Engine.Shaders.Standard.Attributes);
+  console.log(Engine.Shaders.Standard.Program);
+>>>>>>> b5b89275b379e3caf92ad9889b71ccce319d5848
 }
 /*
 var str =

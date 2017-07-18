@@ -14,6 +14,10 @@ function EngineObj(){
     canvas = document.getElementById('WebGL');
     try{
       this.gl = canvas.getContext("experimental-webgl");
+<<<<<<< HEAD
+=======
+      //Load And Parse Shaders Here
+>>>>>>> b5b89275b379e3caf92ad9889b71ccce319d5848
       this.LoadShaders(['Standard']);
       this.gl.clearColor(0.3,0.3,0.3,1);
       this.gl.enable(this.gl.DEPTH_TEST);
@@ -24,7 +28,11 @@ function EngineObj(){
       this.gl.viewport(0, 0, this.gl.viewportWidth, this.gl.viewportHeight);
       this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
       this.initialized = true;
+<<<<<<< HEAD
       //doneLoading();
+=======
+      doneLoading();
+>>>>>>> b5b89275b379e3caf92ad9889b71ccce319d5848
     }
     catch(e){
       canvas.style.display = 'none';
