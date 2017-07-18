@@ -8,7 +8,7 @@ function Load(Addr, Callback){
       Callback(this);
     }
   };
-  req.open("GET", Addr, true);
+  req.open("GET", Addr, false);
   req.send();
 }
 function LogReq(req){
