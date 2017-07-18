@@ -1,6 +1,10 @@
 //==============================================================================
 //SHADER OBJECT
 //Contains Compiled Shader And A Tag.
+//Properties:
+//--Program - compiled and linked webGlShader
+//--Attributes - object/dictionary of locations of attributes found in the shader
+//--Uniforms - object/dictionart of locations of uniforms found in the shader.
 //==============================================================================
 function Shader(name, gl){
   this.Program = gl.createProgram();
@@ -23,6 +27,7 @@ function Shader(name, gl){
   //Load Shader Source
   var fShaderSource = gl.getShaderSource(fShader);
   var vShaderSource = gl.getShaderSource(vShader);
+  //==============================================================================
   //RegExp for determining attribute names
   var MatchAttrib = /attribute (.+\b) (\w+)/gi;
   var MatchAttribName =  / .+\b (.+)/i;
@@ -39,33 +44,136 @@ function Shader(name, gl){
     }
     console.log("Enabled vert attrib: "+split[1]);
   }, this);
-
+  //==============================================================================
+  //RegExp for finding structs
+  var FindStruct = /struct (\w+\b).?{[\s\S]+?};/gi;
+  var SplitStruct = /struct (\w+).?{[\s\S]([\s\S]+)+}/i;
+  var ParseStruct = /(.+\b) (\w+)/gi;
+  var NameField = /.+\b (\w+)/i;
+  //Pre-process struct data
+  var vStructs = [];
+  var fStructs = [];
+  // Find structs in vertex shader and log their info in a struct object
+  var index = 0;
+  var vStructList = vShaderSource.match(FindStruct);
+  if(vStructList != null){
+    vStructList.forEach(function(element){
+      var sNameBody = element.match(SplitStruct);
+      vStructs.push(new Struct(sNameBody[1]));
+      (sNameBody[2].match(ParseStruct)).forEach(function(line){
+        var fName = line.match(NameField);
+        vStructs[index].fields.push(fName[1]);
+      }, this);
+      index++;
+    }, this);
+  }
+  // Find structs in fragment shader and log their info in a struct object
+  index = 0;
+  var fStructList = fShaderSource.match(FindStruct);
+  if(fStructList != null){
+    fStructList.forEach(function(element){
+      var sNameBody = element.match(SplitStruct);
+      vStructs.push(new Struct(sNameBody[1]));
+      (sNameBody[2].match(ParseStruct)).forEach(function(line){
+        var fName = line.match(NameField);
+        fStructs[index].fields.push(fName[1]);
+      }, this);
+      index++;
+    }, this);
+  }
+  //==============================================================================
   //RegExp for determining Uniform names
   var MatchUni = /uniform (.+\b) (.+);/gi;
   var MatchUniName = / (.+\b) (\w+).?(\d+)*.?/i;
   //Find each uniform
   var vUniforms = vShaderSource.match(MatchUni);
   var fUniforms = fShaderSource.match(MatchUni);
-  //For each uniform in vertex shader, find name and init
+  //For each uniform in ---vertex--- shader, find name and init
   console.log("\nVertex Uniforms:");
   vUniforms.forEach(function(element){
     let split = element.match(MatchUniName);
     if(split[3] != undefined){
-      //Skip this for now since its an array Uniform
+      console.log("Processing array uniform: "+split[2]);
+      console.groupCollapsed("Type Matching");
+      //This is an array uniform, so handle accordingly
+      let size = parseInt(split[3]);
+      this.Uniforms[split[2]] = [];
+      let findStruct = true;
+      //Iterate over the length of the array
+      for(var i = 0; i < size; i++){
+        this.Uniforms[split[2]].push({});
+        //Look to see if the uniform type matches a struct
+        if (findStruct){
+          findStruct = false;
+          //Iterate over the total number of structs
+          for(var j = 0; j < vStructs.length; j++){
+            if(split[1] == vStructs[j].name){
+              findStruct = true;
+              console.log('Matched uniform '+split[2]+'['+i+'] to struct type '+vStructs[j].name);
+              //Iterate over all the fields of a given struct
+              for(var k = 0; k < vStructs[j].fields.length; k++){
+                let uniName = split[2]+'['+i+']'+'.'+vStructs[j].fields[k];
+                this.Uniforms[split[2]][i][vStructs[j].fields[k]] = gl.getUniformLocation(this.Program, uniName);
+              }
+            }
+          }
+        }
+        if(!findStruct){
+          //Since no matching struct was found we can assume it's a basic type array
+          console.log('Matched uniform '+split[2]+'['+i+']'+' to basic type: '+split[1]);
+          let uniName = split[2]+'['+i+']';
+          this.Uniforms[split[2]][i] = gl.getUniformLocation(this.Program, uniName);
+        }
+      }
+      console.groupEnd();
     }
     else{
       this.Uniforms[split[2]] = gl.getUniformLocation(this.Program, split[2]);
       console.log("Saved uniform location: "+split[2]);
     }
   }, this);
-  //For each uniform in fragment shader, find name and init
+  //For each uniform in ---fragment--- shader, find name and init
   console.log("\nFragment Uniforms:");
   if(fUniforms != null){
     fUniforms.forEach(function(element){
       let split = element.match(MatchUniName);
       if(split[3]!=undefined){
-        //Skip this for now since its an array uniform.
-      }
+        if(this.Uniforms[split[2]]==undefined){
+          console.log("Processing array uniform: "+split[2]);
+          console.groupCollapsed("Type Matching");
+          //This is an array uniform, so handle accordingly
+          let size = parseInt(split[3]);
+          this.Uniforms[split[2]] = [];
+          let findStruct = true;
+          //Iterate over the length of the array
+          for(var i = 0; i < size; i++){
+            this.Uniforms[split[2]].push({});
+            //Look to see if the uniform type matches a struct
+            if (findStruct){
+              findStruct = false;
+              //Iterate over the total number of structs
+              for(var j = 0; j < vStructs.length; j++){
+                if(split[1] == vStructs[j].name){
+                  findStruct = true;
+                  console.log('Matched uniform '+split[2]+'['+i+'] to struct type '+vStructs[j].name);
+                  //Iterate over all the fields of a given struct
+                  for(var k = 0; k < vStructs[j].fields.length; k++){
+                    let uniName = split[2]+'['+i+']'+'.'+vStructs[j].fields[k];
+                    this.Uniforms[split[2]][i][vStructs[j].fields[k]] = gl.getUniformLocation(this.Program, uniName);
+                  }
+                }
+              }
+            }
+            if(!findStruct){
+              //Since no matching struct was found we can assume it's a basic type array
+              console.log('Matched uniform '+split[2]+'['+i+']'+' to basic type: '+split[1]);
+              let uniName = split[2]+'['+i+']';
+              this.Uniforms[split[2]][i] = gl.getUniformLocation(this.Program, uniName);
+            }
+          }
+          console.groupEnd();
+        }
+      } //
       else{
         //Check to see if the uniform has been added by the vertex shader.
         if(this.Uniforms[split[2]]==undefined){
@@ -119,4 +227,12 @@ function Parse(url, gl){
     console.log("Failed to load shader code from server.\n");
     return null;
   }
+}
+//==============================================================================
+//Supportive struct object.
+//Maintains information about a struct in a shader
+//==============================================================================
+function Struct(name){
+  this.name = name;
+  this.fields = [];
 }
