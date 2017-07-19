@@ -7,11 +7,13 @@
 //--initialized - is the engine fully initialized?
 //--Shaders - object/dictionary of Shader objects the engine can use (see Shader.js)
 //==============================================================================
-function EngineObj(){
+function EngineCore(){
   this.gl = null;
   this.canvas = null;
-  this.initialized = false;
+  this.State = new EngineState();
+  this.TimeKeeper = new TimeKeeper();
   this.Shaders = {};
+  this.Objects = {};
   //==============================================================================
   //Initializes the Graphics Engine
   //==============================================================================
@@ -20,6 +22,8 @@ function EngineObj(){
     try{
       this.gl = canvas.getContext("experimental-webgl");
       this.LoadShaders(['Standard']);
+      this.LoadMeshData(['Monkey']);
+      glMatrix.ENABLE_SIMD = true;
       this.gl.clearColor(0.3,0.3,0.3,1);
       this.gl.enable(this.gl.DEPTH_TEST);
       canvas.width = window.innerWidth;
@@ -28,7 +32,7 @@ function EngineObj(){
       this.gl.viewportHeight = window.innerHeight;
       this.gl.viewport(0, 0, this.gl.viewportWidth, this.gl.viewportHeight);
       this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-      this.initialized = true;
+      this.State.initialized = true;
       doneLoading();
     }
     catch(e){
@@ -47,6 +51,19 @@ function EngineObj(){
         this.Shaders[element] = new Shader(element, this.gl);
         console.groupEnd();
         console.log("Succesfully loaded shader: " + element);
+    }, this);
+    console.groupEnd();
+  }
+  //==============================================================================
+  //Download and bind mesh data from server
+  //==============================================================================
+  this.LoadMeshData = function(MeshNames){
+    console.group("Mesh Processing");
+    MeshNames.forEach(function(element){
+      console.groupCollapsed("Mesh: "+element);
+      this.Objects[element] = new Object(element, this.gl);
+      console.groupEnd();
+      console.log("Succesfully loaded mesh: "+element);
     }, this);
     console.groupEnd();
   }
