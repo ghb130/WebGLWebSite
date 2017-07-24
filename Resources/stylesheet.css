@@ -35,4 +35,13 @@ body{
   position: absolute;
   left: 0px;
   top: 0px;
+  z-index: -1;
+}
+.FrameRate {
+  color: #1bce00;
+  position: absolute;
+  font-family: Verdana;
+  left: 0%;
+  top: 0%;
+  text-shadow: 1px 1px 3px #000000;
 }

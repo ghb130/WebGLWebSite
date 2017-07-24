@@ -6,6 +6,9 @@
   <title> Test Page </title>
 </head>
 <body>
+  <div class="FrameRate" id="frameRateText">
+    60
+  </div>
   <div>
     <canvas class="fullscreen" id="WebGL" width="960" height="480">
     <p class="BackgroundText">Please use a browser that supports WebGL.</p>
@@ -15,6 +18,7 @@
     Loading
     <img class="animated median" src="Resources/WheelXSmall.png" alt="Loading Wheel">
   </div>
-  <script data-main="Main" src="Lib/require.js" async></script>
+  <script src="Lib/gl-matrix.js"></script>
+  <script data-main="Main" src="Lib/require.js"></script>
 </body>
 </html>

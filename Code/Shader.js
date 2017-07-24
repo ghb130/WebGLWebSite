@@ -6,10 +6,10 @@
 //--Attributes - object/dictionary of locations of attributes found in the shader
 //--Uniforms - object/dictionart of locations of uniforms found in the shader.
 //==============================================================================
-function Shader(name, gl){
+function Shader(name){
   this.Program = gl.createProgram();
   this.Attributes = {};
-  this.Uniforms ={};
+  this.Uniforms = {};
 
   var vShader = Parse("Shaders/"+name+"_v.glsl", gl);
   var fShader = Parse("Shaders/"+name+"_f.glsl", gl);
@@ -38,7 +38,7 @@ function Shader(name, gl){
   vAttribs.forEach(function(element){
     let split = element.match(MatchAttribName);
     try{this.Attributes[split[1]] = gl.getAttribLocation(this.Program, split[1]);
-    gl.enableVertexAttribArray(this.Program[split[1]]);}
+    gl.enableVertexAttribArray(this.Attributes[split[1]]);}
     catch(e){
       console.log(e);
     }
