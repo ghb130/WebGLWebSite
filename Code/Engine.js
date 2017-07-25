@@ -11,8 +11,10 @@ function EngineCore(){
   this.State = new EngineState();
   this.TimeKeeper = new TimeKeeper();
   this.Matrices = {};
+  this.MatStack = new Stack();
   this.Shaders = {};
   this.Objects = [];
+  this.Cameras = [];
   //==============================================================================
   //Initializes the Graphics Engine
   //==============================================================================
@@ -22,17 +24,15 @@ function EngineCore(){
       gl = canvas.getContext("experimental-webgl");
       this.LoadShaders(['Standard']);
       this.LoadMeshData(['Monkey']);
+      console.log("here");
+      this.Cameras.push(new Camera());
+      this.Cameras[0].transform.position = vec3.fromValues(0,0,3);
       this.Matrices.ModelMatrix = mat4.create();
       this.Matrices.NormalMatrix = mat4.create();
       this.Matrices.MVPMatrix = mat4.create();
+      this.Matrices.TempMatrix = mat4.create();
       gl.clearColor(0.3,0.3,0.3,1);
       gl.enable(gl.DEPTH_TEST);
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      gl.viewportWidth = window.innerWidth;
-      gl.viewportHeight = window.innerHeight;
-      gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       this.State.initialized = true;
       doneLoading();
     }
@@ -43,53 +43,62 @@ function EngineCore(){
   }
   //==============================================================================
   //Draws current frame on canvas
+  //Avoid all 'this' references, as this function is part of update which uses callbacks
   //==============================================================================
    this.renderFrame = function(){
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-
-    mat4.lookAt(Engine.Matrices.ModelMatrix, vec3.fromValues(0,0,3), vec3.fromValues(0,0,0), vec3.fromValues(0,1,0));
-    mat4.perspective(Engine.Matrices.MVPMatrix, 70, gl.viewportWidth/gl.viewportHeight, 0.1, 100.0);
-    mat4.multiply(Engine.Matrices.MVPMatrix, Engine.Matrices.MVPMatrix, Engine.Matrices.ModelMatrix);
+    //Reset matrices
     mat4.identity(Engine.Matrices.ModelMatrix);
-    mat4.rotateY(Engine.Matrices.ModelMatrix, Engine.Matrices.ModelMatrix, tempRot);
-    mat4.multiply(Engine.Matrices.MVPMatrix, Engine.Matrices.MVPMatrix, Engine.Matrices.ModelMatrix);
+    //Set view to current active camera
+    Engine.Cameras[Engine.State.ActiveCamera].setView();
+    //Push default matrices to top of stack
+    Engine.MatStack.push(Engine.Matrices.ModelMatrix);
+    Engine.MatStack.push(Engine.Matrices.MVPMatrix);
 
-    gl.uniformMatrix4fv(Engine.Shaders.Standard.Uniforms.u_MVPMatrix, false, Engine.Matrices.MVPMatrix);
-
-    Engine.Objects.map(function(obj){
+    for (var i = 0; i < Engine.Objects.length; i++){
+      //Pop fresh model and mvp Matrices
+      Engine.Matrices.MVPMatrix = Engine.MatStack.pop();
+      Engine.Matrices.ModelMatrix = Engine.MatStack.pop();
+      //Create and alias for the current object
+      var obj = Engine.Objects[i];
+      //Set shader for current object
+      gl.useProgram(Engine.Shaders[obj.Shader].Program);
+      //Perform per object transformations here
+      obj.transform.apply(Engine.Matrices.ModelMatrix);
+      mat4.multiply(Engine.Matrices.MVPMatrix, Engine.Matrices.MVPMatrix, Engine.Matrices.ModelMatrix);
+      //Bind attributes
       gl.bindBuffer(gl.ARRAY_BUFFER, obj.Buffer.position);
-      gl.vertexAttribPointer(Engine.Shaders.Standard.Attributes.a_Position, 3, gl.FLOAT, false, 0, 0);
-
+      gl.vertexAttribPointer(Engine.Shaders[obj.Shader].Attributes.a_Position, 3, gl.FLOAT, false, 0, 0);
       gl.bindBuffer(gl.ARRAY_BUFFER, obj.Buffer.uv);
-      gl.vertexAttribPointer(Engine.Shaders.Standard.Attributes.a_UV, 2, gl.FLOAT, false, 0, 0);
-
-    // gl.bindBuffer(gl.ARRAY_BUFFER, obj.Buffer.normal);
-    // gl.vertexAttribPointer(Engine.Shaders.Standard.Attributes.a_Normal, 3, gl.FLOAT, false, 0, 0);
-
+      gl.vertexAttribPointer(Engine.Shaders[obj.Shader].Attributes.a_UV, 2, gl.FLOAT, false, 0, 0);
+      // gl.bindBuffer(gl.ARRAY_BUFFER, obj.Buffer.normal);
+      // gl.vertexAttribPointer(Engine.Shaders[obj.Shader].Attributes.a_Normal, 3, gl.FLOAT, false, 0, 0);
+      //Bind Uniforms
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, obj.Textures[0]);
-      gl.uniform1i(Engine.Shaders.Standard.Uniforms.u_Sampler, 0);
-
+      gl.uniform1i(Engine.Shaders[obj.Shader].Uniforms.u_Sampler, 0);
+      gl.uniformMatrix4fv(Engine.Shaders[obj.Shader].Uniforms.u_MVPMatrix, false, Engine.Matrices.MVPMatrix);
+      //Draw
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,  obj.Buffer.Index);
-
       gl.drawElements(gl.TRIANGLES, obj.Buffer.Index.numVerts, gl.UNSIGNED_SHORT, 0);
-    });
+    }
   }
   //==============================================================================
   //Primary render loop
+  //Avoid all 'this' references, as this function uses a callback
   //==============================================================================
   this.Update = function(){
+    var begin = window.performance.now();
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     gl.viewportWidth = window.innerWidth;
     gl.viewportHeight = window.innerHeight;
     //Call any runtime logic here
     requestAnimationFrame(Engine.Update, canvas);
-    tempRot+=(0.5*Engine.TimeKeeper.deltaTime)/1000.0;
-    tempRot = tempRot%6.28318;
     Engine.renderFrame();
     Engine.TimeKeeper.update();
+    Engine.TimeKeeper.frameTime = (window.performance.now()-begin).toFixed(2);
   }
   //==============================================================================
   //Download And Compile Shader Code From Server.
@@ -112,7 +121,7 @@ function EngineCore(){
     console.group("Mesh Processing");
     MeshNames.forEach(function(element){
       console.groupCollapsed("Mesh: "+element);
-      this.Objects.push(new Object(element));
+      this.Objects.push(new Object(element, this.Objects.length));
       console.groupEnd();
     }, this);
     console.groupEnd();

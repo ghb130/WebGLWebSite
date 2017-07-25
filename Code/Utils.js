@@ -4,6 +4,7 @@
 //==============================================================================
 function EngineState(){
   this.initialized = false;
+  this.ActiveCamera = 0;
 }
 //==============================================================================
 //TIMEKEEPER OBJECT
@@ -12,19 +13,27 @@ function EngineState(){
 function TimeKeeper(){
   this.initTime = Date.now();
   this.lastFrame = this.initTime;
-  this.deltaTime = 0;
-  this.frameRate = 0;
-  this.ticked = false
+  this.deltaTime = 16;
+  this.frameRate = 60;
+  this.ticked = false;
+  this.frameTime = 0;
+  this.lastFrames = [60,60,60,60,60];
   this.update = function(){
+    if(this.frameRate == Infinity){this.frameRate=60}
     this.deltaTime = Date.now()-this.lastFrame;
     this.lastFrame = Date.now();
-    this.frameRate = Math.round((1000/this.deltaTime)*10)/10;
+    this.lastFrames.shift();
+    this.lastFrames.push((1000/this.deltaTime));
+    for (var i = 0; i < this.lastFrames.length; i++){
+      this.frameRate = this.frameRate + this.lastFrames[i];
+    }
+    this.frameRate = (this.frameRate/(this.lastFrames.length+1));
     if(!this.ticked){
       this.ticked = true;
       window.setTimeout(()=>{
-        document.getElementById("frameRateText").innerHTML = this.frameRate.toString();
+        document.getElementById("frameRateText").innerHTML = this.frameRate.toFixed(2).toString()+" fps<br>"+this.frameTime.toString()+" ms";
         Engine.TimeKeeper.ticked = false;
-      }, 500);
+      }, 16);
     }
   }
 }
@@ -34,8 +43,13 @@ function TimeKeeper(){
 //==============================================================================
 function Transform(){
   this.position = vec3.create();
-  this.scale = vec3.create();
+  this.scale = vec3.fromValues(1,1,1);
   this.rotation = quat.create();
+  this.apply = function(matrix){
+    var prs = mat4.create();
+    mat4.fromRotationTranslationScale(prs, this.rotation, this.position, this.scale);
+    mat4.multiply(matrix,matrix,prs);
+  }
 }
 //==============================================================================
 //MATRIX STACK
@@ -44,7 +58,7 @@ function Transform(){
 function Stack(){
   this.stack = [];
   this.push = function(matrix){
-    this.stack.push((typeof matrix).clone(matrix));
+    this.stack.push(mat4.clone(matrix));
   }
   this.pop = function(){
     return this.stack.pop();

@@ -1,6 +1,7 @@
-requirejs(["Code/Utils", "Code/Shader", "Code/Object", "Code/Engine"], main);
+requirejs(["Code/Utils", "Code/Shader", "Code/Object", "Code/Animation", "Code/Camera", "Code/Engine"], main);
 //==============================================================================
-//MAIN
+//MAIN - call engine code here
+//Program wide variables:
 var gl = null;
 var canvas = null;
 var Engine = null;
@@ -10,10 +11,5 @@ function main(){
   Engine = new EngineCore();
   Engine.init();
   console.log("\nEngine initialization complete.\n\n");
-  console.log(Engine.Objects[0]);
-  console.log(Engine.Shaders.Standard);
-  console.log(Engine.Matrices);
-  console.log(gl);
-  gl.useProgram(Engine.Shaders.Standard.Program);
   Engine.Update();
 }
