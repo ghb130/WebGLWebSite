@@ -15,6 +15,7 @@ function EngineCore(){
   this.Shaders = {};
   this.Objects = [];
   this.Cameras = [];
+  this.AnimPlayer = new AnimPlayer();
   //==============================================================================
   //Initializes the Graphics Engine
   //==============================================================================
@@ -25,7 +26,7 @@ function EngineCore(){
       this.LoadShaders(['Standard']);
       this.LoadMeshData(['Monkey']);
       console.log("here");
-      this.Cameras.push(new Camera());
+      this.Cameras.push(new Camera(this.Cameras.length));
       this.Cameras[0].transform.position = vec3.fromValues(0,0,3);
       this.Matrices.ModelMatrix = mat4.create();
       this.Matrices.NormalMatrix = mat4.create();
@@ -98,6 +99,7 @@ function EngineCore(){
     requestAnimationFrame(Engine.Update, canvas);
     Engine.renderFrame();
     Engine.TimeKeeper.update();
+    Engine.AnimPlayer.update();
     Engine.TimeKeeper.frameTime = (window.performance.now()-begin).toFixed(2);
   }
   //==============================================================================

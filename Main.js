@@ -5,7 +5,6 @@ requirejs(["Code/Utils", "Code/Shader", "Code/Object", "Code/Animation", "Code/C
 var gl = null;
 var canvas = null;
 var Engine = null;
-var tempRot = 0;
 //==============================================================================
 function main(){
   Engine = new EngineCore();
