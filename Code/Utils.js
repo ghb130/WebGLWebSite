@@ -41,14 +41,27 @@ function TimeKeeper(){
 //TRANSFORM OBJECT
 //Maintains information about an objects position in space.
 //==============================================================================
-function Transform(){
+function Transform(pos = vec3.create(), scale = vec3.fromValues(1,1,1), rot = quat.create()){
   this.position = vec3.create();
   this.scale = vec3.fromValues(1,1,1);
   this.rotation = quat.create();
+  vec3.copy(this.position, pos);
+  vec3.copy(this.scale, scale);
+  quat.copy(this.rotation, rot);
+  
   this.apply = function(matrix){
     var prs = mat4.create();
     mat4.fromRotationTranslationScale(prs, this.rotation, this.position, this.scale);
     mat4.multiply(matrix,matrix,prs);
+  }
+  this.setPos = function(x,y,z){
+    vec3.set(this.position, x, y, z);
+  }
+  this.setScale = function(x,y,z){
+    vec3.set(this.scale, x, y, z);
+  }
+  this.setRotationQuat = function(quat){
+    quat.copy(this.rotation, quat);
   }
 }
 //==============================================================================

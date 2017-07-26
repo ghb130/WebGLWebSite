@@ -5,7 +5,7 @@
 //Properties:
 //
 //==============================================================================
-function Object(name, index, shader = "Standard"){
+function Object(name, shader = "Standard"){
   this.Buffer = {};
   this.Buffer.position = null;
   this.Buffer.normal = null;
@@ -13,7 +13,6 @@ function Object(name, index, shader = "Standard"){
   this.Buffer.Index = null;
   this.Textures = [];
   this.tag = name;
-  this.index = 0;
   this.transform = new Transform();
   this.Shader = shader;
   this.initialized = false;

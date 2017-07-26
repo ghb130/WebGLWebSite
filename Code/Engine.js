@@ -13,7 +13,7 @@ function EngineCore(){
   this.Matrices = {};
   this.MatStack = new Stack();
   this.Shaders = {};
-  this.Objects = [];
+  this.Objects = {};
   this.Cameras = [];
   this.AnimPlayer = new AnimPlayer();
   //==============================================================================
@@ -25,7 +25,6 @@ function EngineCore(){
       gl = canvas.getContext("experimental-webgl");
       this.LoadShaders(['Standard']);
       this.LoadMeshData(['Monkey']);
-      console.log("here");
       this.Cameras.push(new Camera(this.Cameras.length));
       this.Cameras[0].transform.position = vec3.fromValues(0,0,3);
       this.Matrices.ModelMatrix = mat4.create();
@@ -57,12 +56,13 @@ function EngineCore(){
     Engine.MatStack.push(Engine.Matrices.ModelMatrix);
     Engine.MatStack.push(Engine.Matrices.MVPMatrix);
 
-    for (var i = 0; i < Engine.Objects.length; i++){
+    for (var obj in Engine.Objects){
+    if(Engine.Objects.hasOwnProperty(obj)){
       //Pop fresh model and mvp Matrices
       Engine.Matrices.MVPMatrix = Engine.MatStack.pop();
       Engine.Matrices.ModelMatrix = Engine.MatStack.pop();
       //Create and alias for the current object
-      var obj = Engine.Objects[i];
+      var obj = Engine.Objects[obj];
       //Set shader for current object
       gl.useProgram(Engine.Shaders[obj.Shader].Program);
       //Perform per object transformations here
@@ -83,7 +83,7 @@ function EngineCore(){
       //Draw
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,  obj.Buffer.Index);
       gl.drawElements(gl.TRIANGLES, obj.Buffer.Index.numVerts, gl.UNSIGNED_SHORT, 0);
-    }
+    }}
   }
   //==============================================================================
   //Primary render loop
@@ -123,7 +123,7 @@ function EngineCore(){
     console.group("Mesh Processing");
     MeshNames.forEach(function(element){
       console.groupCollapsed("Mesh: "+element);
-      this.Objects.push(new Object(element, this.Objects.length));
+      this.Objects[element] = new Object(element);
       console.groupEnd();
     }, this);
     console.groupEnd();
