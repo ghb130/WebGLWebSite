@@ -48,7 +48,7 @@ function Transform(pos = vec3.create(), scale = vec3.fromValues(1,1,1), rot = qu
   vec3.copy(this.position, pos);
   vec3.copy(this.scale, scale);
   quat.copy(this.rotation, rot);
-  
+
   this.apply = function(matrix){
     var prs = mat4.create();
     mat4.fromRotationTranslationScale(prs, this.rotation, this.position, this.scale);
@@ -62,6 +62,25 @@ function Transform(pos = vec3.create(), scale = vec3.fromValues(1,1,1), rot = qu
   }
   this.setRotationQuat = function(quat){
     quat.copy(this.rotation, quat);
+  }
+  this.clone = function(trans){
+    vec3.copy(this.position, trans.position);
+    vec3.copy(this.scale, trans.scale);
+    quat.copy(this.rotation, trans.rotation);
+  }
+  this.add = function(trans){
+    vec3.add(this.position, this.position, trans.position);
+    vec3.add(this.scale, this.scale, trans.scale);
+    quat.multiply(this.rotation, this.rotation, trans.rotation);
+    quat.normalize(this.rotation, this.rotation);
+  }
+  this.difference = function(trans){
+    vec3.subtract(this.position, trans.position, this.position, );
+    vec3.subtract(this.scale, trans.scale, this.scale);
+    var invQuat = quat.create();
+    quat.invert(invQuat, trans.rotation);
+    quat.multiply(this.rotation, this.rotation, invQuat);
+    quat.normalize(this.rotation, this.rotation);
   }
 }
 //==============================================================================
