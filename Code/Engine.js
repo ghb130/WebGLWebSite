@@ -14,6 +14,7 @@ function EngineCore(){
   this.MatStack = new Stack();
   this.Shaders = {};
   this.Objects = {};
+  this.World = {};
   this.Cameras = [];
   this.AnimPlayer = new AnimPlayer();
   //==============================================================================
@@ -56,13 +57,13 @@ function EngineCore(){
     Engine.MatStack.push(Engine.Matrices.ModelMatrix);
     Engine.MatStack.push(Engine.Matrices.MVPMatrix);
 
-    for (var obj in Engine.Objects){
-    if(Engine.Objects.hasOwnProperty(obj)){
+    for (var obj in Engine.World){
+    if(Engine.World.hasOwnProperty(obj)){
       //Pop fresh model and mvp Matrices
       Engine.Matrices.MVPMatrix = Engine.MatStack.pop();
       Engine.Matrices.ModelMatrix = Engine.MatStack.pop();
       //Create and alias for the current object
-      var obj = Engine.Objects[obj];
+      var obj = Engine.World[obj];
       //Set shader for current object
       gl.useProgram(Engine.Shaders[obj.Shader].Program);
       //Perform per object transformations here

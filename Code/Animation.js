@@ -3,19 +3,21 @@
 //Maintains information about the currently active animations
 //==============================================================================
 function AnimPlayer(){
-  this.Animations = [];
+  this.Animations = {};
   this.update = function(){
-    for(var i = 0; i < this.Animations.length; i++){
-      if(this.Animations[i].finished){
-        this.Animations.splice(i,1);
-        i--;
-        continue;
+    for (var anim in this.Animations){
+      if (this.Animations.hasOwnProperty(anim)){
+        if(this.Animations[anim].finished){
+          delete this.Animations[anim];
+        }
+        else{
+          this.Animations[anim].update();
+        }
       }
-      this.Animations[i].update();
     }
   }
-  this.addAnim = function(anim){
-    this.Animations.push(anim);
+  this.addAnim = function(name, anim){
+    this.Animations[name] = anim;
   }
 }
 //==============================================================================
@@ -61,6 +63,7 @@ function Animation(object, trans, speed, flags, count = 1){
   this.destTrans = trans;
   this.initTrans = [];
   this.deltaTrans = new Transform();
+  this.deltaTrans.copy(this.Object.transform);
   this.cachedTrans = new Transform();
   this.speed = speed;
   this.count = count;
@@ -90,14 +93,15 @@ function Animation(object, trans, speed, flags, count = 1){
             this.percent = -1.00;
             this.upTick = false;
           }
-          else if(this.bounce){
+          else if(this.bounce && this.upTick){
             this.direction = this.direction*-1;
+            this.upTick = false;
           }
-          else if (this.loop || this.curCount < this.count) {
+          else if ((this.loop || this.curCount < this.count)&&!this.bounce) {
             this.percent = this.percent%1.00;
             this.curCount++;
           }
-          else{
+          else if (!this.bounce){
             this.finished = true;
           }
         }
@@ -123,10 +127,11 @@ function Animation(object, trans, speed, flags, count = 1){
           if(this.circular){
             //do nothing since we want to go to -1.00
           }
-          else if(this.loop && this.bounce){
+          else if(this.loop && this.bounce && !this.uptick){
             this.direction = this.direction*-1;
             this.percent = 0.00001;
             this.curCount++;
+            this.upTick = true;
           }
           else if (this.loop || this.curCount < this.count) {
             this.percent = 1.00;
@@ -144,15 +149,18 @@ function Animation(object, trans, speed, flags, count = 1){
           var addPercent = (this.speed*(Engine.TimeKeeper.deltaTime/1000))/100;
           this.percent += this.direction * addPercent;
           //Apply animations if enabled
+          this.cachedTrans.copy(this.deltaTrans);
           if(flags&ANIM_POS){
-            vec3.lerp(this.Object.transform.position, this.initTrans.position, this.destTrans.position, this.percent);
+            vec3.lerp(this.deltaTrans.position, this.initTrans.position, this.destTrans.position, this.percent);
           }
           if(flags&ANIM_SCALE){
-            vec3.lerp(this.Object.transform.scale, this.initTrans.scale, this.destTrans.scale, this.percent);
+            vec3.lerp(this.deltaTrans.scale, this.initTrans.scale, this.destTrans.scale, this.percent);
           }
           if(flags&ANIM_ROT){
-            quat.slerp(this.Object.transform.rotation, this.initTrans.rotation, this.destTrans.rotation, this.percent);
+            quat.slerp(this.deltaTrans.rotation, this.initTrans.rotation, this.destTrans.rotation, this.percent);
           }
+          this.cachedTrans.difference(this.deltaTrans);
+          this.Object.transform.add(this.cachedTrans);
         }
       }
     }

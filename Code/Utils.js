@@ -63,7 +63,7 @@ function Transform(pos = vec3.create(), scale = vec3.fromValues(1,1,1), rot = qu
   this.setRotationQuat = function(quat){
     quat.copy(this.rotation, quat);
   }
-  this.clone = function(trans){
+  this.copy = function(trans){
     vec3.copy(this.position, trans.position);
     vec3.copy(this.scale, trans.scale);
     quat.copy(this.rotation, trans.rotation);
@@ -75,7 +75,7 @@ function Transform(pos = vec3.create(), scale = vec3.fromValues(1,1,1), rot = qu
     quat.normalize(this.rotation, this.rotation);
   }
   this.difference = function(trans){
-    vec3.subtract(this.position, trans.position, this.position, );
+    vec3.subtract(this.position,  trans.position, this.position);
     vec3.subtract(this.scale, trans.scale, this.scale);
     var invQuat = quat.create();
     quat.invert(invQuat, trans.rotation);
