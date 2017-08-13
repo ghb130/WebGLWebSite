@@ -103,3 +103,24 @@ function doneLoading() {
   var x = document.getElementById('LoadingText');
   x.style.display = 'none';
 }
+//==============================================================================
+//Animation Info Struct
+//Passed to the animation function to provide information on how to animate an object
+//Arguments:
+//  obj: the object to animate
+//  trans: the destination Transform
+//  speed: the rate of playback of the animation in % per second
+//  count(optional): number of times to repeat the animation
+//  flags: bitwise set of flags to determine anim behavior. See function: animation
+//  callback: function to call when animation terminates
+//  smoothing: amount by which to smooth the animation 
+//==============================================================================
+function animInf(obj, trans, speed, count = 1){
+  this.Object = obj;
+  this.Trans = trans;
+  this.speed = speed;
+  this.count = count;
+  this.flags = 0b000000000000;
+  this.callback = null;
+  this.smoothing = 1;
+}

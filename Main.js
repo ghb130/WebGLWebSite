@@ -17,13 +17,20 @@ function main(){
   vec3.normalize(axis, axis);
   quat.setAxisAngle(rot, axis, Math.PI);
   var destTrans = new Transform(undefined, undefined, rot);
-  var destTrans2 = new Transform(vec3.fromValues(1,-1,-3), undefined, undefined);
-  var destTrans3 = new Transform(vec3.fromValues(-1,1,-3), undefined, undefined);
-  var rot = new Animation(Engine.World.Monkey, destTrans, 50, ANIM_ROT|INT_LINE|CIRCULAR|REPEAT);
-  var slide = new Animation(Engine.World.Monkey, destTrans2, 50, ANIM_POS|INT_LINE|BOUNCE|REPEAT);
-  var slide2 = new Animation(Engine.World.Monkey, destTrans3, 150, ANIM_POS|INT_LINE|BOUNCE|REPEAT);
+  var destTrans2 = new Transform(vec3.fromValues(-1,1,-3), undefined, undefined);
+  var destTrans3 = new Transform(vec3.fromValues(1,1,-3), undefined, undefined);
+  var destTrans4 = new Transform(vec3.fromValues(1,-1,-3), undefined, undefined);
+
+  var animInfRot = new animInf(Engine.World.Monkey, destTrans, 50);
+  animInfRot.flags = ANIM_ROT|INT_LINE|CIRCULAR|REPEAT;
+  var rot = new Animation(animInfRot);
+
+  var animInfSlide = new animInf(Engine.World.Monkey, [destTrans2, destTrans3, destTrans4], 50);
+  animInfSlide.flags = ANIM_POS|INT_BEZ|BOUNCE|REPEAT|SMOOTHED;
+  var slide = new Animation(animInfSlide);
+
   Engine.AnimPlayer.addAnim('Spin360',rot);
   Engine.AnimPlayer.addAnim('SlideLR', slide);
-  Engine.AnimPlayer.addAnim('SlideUD', slide2);
+
   Engine.Update();
 }
