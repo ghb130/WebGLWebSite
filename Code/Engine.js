@@ -62,6 +62,8 @@ function EngineCore(){
       //Pop fresh model and mvp Matrices
       Engine.Matrices.MVPMatrix = Engine.MatStack.pop();
       Engine.Matrices.ModelMatrix = Engine.MatStack.pop();
+      Engine.MatStack.push(Engine.Matrices.ModelMatrix);
+      Engine.MatStack.push(Engine.Matrices.MVPMatrix);
       //Create and alias for the current object
       var obj = Engine.World[obj];
       //Set shader for current object
@@ -128,5 +130,25 @@ function EngineCore(){
       console.groupEnd();
     }, this);
     console.groupEnd();
+  }
+  //==============================================================================
+  //Take an object and instance it into the world
+  //==============================================================================
+  this.Instantiate = function(obj, trans = null){
+    var instanceName = (obj.tag)+((obj.instances)++).toString();
+    this.World[instanceName] = this.Duplicate(obj, instanceName, trans);
+  }
+  //==============================================================================
+  //Duplicate an object. Return duplicate.
+  //==============================================================================
+  this.Duplicate = function(obj, name, trans){
+    var newObj = new ObjInst(name);
+    newObj.Buffer = obj.Buffer;
+    newObj.Textures = obj.Textures;
+    if(trans != null){newObj.transform.copy(trans);}
+    else{newObj.transform.copy(obj.transform);}
+    newObj.Shader = obj.Shader;
+    newObj.initialized = true;
+    return newObj;
   }
 }

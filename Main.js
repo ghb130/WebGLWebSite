@@ -32,5 +32,10 @@ function main(){
   Engine.AnimPlayer.addAnim('Spin360',rot);
   Engine.AnimPlayer.addAnim('SlideLR', slide);
 
+  var trans = new Transform();
+  trans.setPos(0,0,-5);
+  Engine.Instantiate(Engine.Objects.Monkey, trans);
+  console.log(Engine.World);
+
   Engine.Update();
 }

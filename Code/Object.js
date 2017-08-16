@@ -15,6 +15,7 @@ function Object(name, shader = "Standard"){
   this.tag = name;
   this.transform = new Transform();
   this.Shader = shader;
+  this.instances = 0;
   this.initialized = false;
   var Addr = "Resources/Models/"+name+".json";
   var AddrTex = "Resources/Textures/"+name+"_tex.png";
@@ -22,6 +23,21 @@ function Object(name, shader = "Standard"){
   LoadMesh(Addr, this);
   console.log("Requesting: "+AddrTex);
   LoadTex(AddrTex, this);
+}
+//==============================================================================
+//Object Intance function. Dont need to reload resources when we instance.
+//==============================================================================
+function ObjInst(name, shader = "Standard"){
+  this.Buffer = {};
+  this.Buffer.position = null;
+  this.Buffer.normal = null;
+  this.Buffer.uv = null;
+  this.Buffer.Index = null;
+  this.Textures = [];
+  this.tag = name;
+  this.transform = new Transform();
+  this.Shader = shader;
+  this.initialized = false;
 }
 //==============================================================================
 //Request texture data from server
