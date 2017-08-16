@@ -17,6 +17,7 @@ function TimeKeeper(){
   this.frameRate = 60;
   this.ticked = false;
   this.frameTime = 0;
+  this.interFrameTime = 0;
   this.lastFrames = [60,60,60,60,60];
   this.update = function(){
     if(this.frameRate == Infinity){this.frameRate=60}
@@ -31,9 +32,12 @@ function TimeKeeper(){
     if(!this.ticked){
       this.ticked = true;
       window.setTimeout(()=>{
-        document.getElementById("frameRateText").innerHTML = this.frameRate.toFixed(2).toString()+" fps<br>"+this.frameTime.toString()+" ms";
+        document.getElementById("frameRateText").innerHTML =
+        this.frameRate.toFixed(2).toString()+" fps<br>"+
+        "CPU Time: "+this.frameTime.toString()+" ms<br>"+
+        "Frametime: "+this.interFrameTime.toString()+" ms";
         Engine.TimeKeeper.ticked = false;
-      }, 16);
+      }, 50);
     }
   }
 }
@@ -61,7 +65,7 @@ function Transform(pos = vec3.create(), scale = vec3.fromValues(1,1,1), rot = qu
     vec3.set(this.scale, x, y, z);
   }
   this.setRotationQuat = function(quat){
-    quat.copy(this.rotation, quat);
+    vec4.copy(this.rotation, quat);
   }
   this.copy = function(trans){
     vec3.copy(this.position, trans.position);

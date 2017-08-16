@@ -16,6 +16,7 @@ function Object(name, shader = "Standard"){
   this.transform = new Transform();
   this.Shader = shader;
   this.instances = 0;
+  this.parent = null;
   this.initialized = false;
   var Addr = "Resources/Models/"+name+".json";
   var AddrTex = "Resources/Textures/"+name+"_tex.png";

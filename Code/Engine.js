@@ -69,7 +69,12 @@ function EngineCore(){
       //Set shader for current object
       gl.useProgram(Engine.Shaders[obj.Shader].Program);
       //Perform per object transformations here
-      obj.transform.apply(Engine.Matrices.ModelMatrix);
+      if(obj.parent == null){
+        obj.transform.apply(Engine.Matrices.ModelMatrix);
+      }
+      else{
+        Engine.evalParent(obj);
+      }
       mat4.multiply(Engine.Matrices.MVPMatrix, Engine.Matrices.MVPMatrix, Engine.Matrices.ModelMatrix);
       //Bind attributes
       gl.bindBuffer(gl.ARRAY_BUFFER, obj.Buffer.position);
@@ -92,8 +97,10 @@ function EngineCore(){
   //Primary render loop
   //Avoid all 'this' references, as this function uses a callback
   //==============================================================================
+  var inter = window.performance.now();
   this.Update = function(){
     var begin = window.performance.now();
+    inter = window.performance.now() - inter;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     gl.viewportWidth = window.innerWidth;
@@ -104,6 +111,8 @@ function EngineCore(){
     Engine.TimeKeeper.update();
     Engine.AnimPlayer.update();
     Engine.TimeKeeper.frameTime = (window.performance.now()-begin).toFixed(2);
+    Engine.TimeKeeper.interFrameTime = inter.toFixed(2);
+    inter = window.performance.now();
   }
   //==============================================================================
   //Download And Compile Shader Code From Server.
@@ -137,6 +146,7 @@ function EngineCore(){
   this.Instantiate = function(obj, trans = null){
     var instanceName = (obj.tag)+((obj.instances)++).toString();
     this.World[instanceName] = this.Duplicate(obj, instanceName, trans);
+    return instanceName;
   }
   //==============================================================================
   //Duplicate an object. Return duplicate.
@@ -150,5 +160,14 @@ function EngineCore(){
     newObj.Shader = obj.Shader;
     newObj.initialized = true;
     return newObj;
+  }
+  //==============================================================================
+  //recursive function to evaluate an object's tranform based on its parent
+  //==============================================================================
+  this.evalParent = function(obj){
+    if(obj.parent != null){
+      this.evalParent(obj.parent);
+    }
+    obj.transform.apply(Engine.Matrices.ModelMatrix);
   }
 }
