@@ -24,7 +24,10 @@ function EngineCore(){
     canvas = document.getElementById('WebGL');
     try{
       gl = canvas.getContext("experimental-webgl");
-      this.LoadShaders(['Standard']);
+      //Event Listeners here==========================================================
+      document.addEventListener("visibilitychange", Engine.pause, false);
+      //==============================================================================
+      this.LoadShaders(['Unlit']);
       this.LoadMeshData(['Monkey']);
       this.Cameras.push(new Camera(this.Cameras.length));
       this.Cameras[0].transform.position = vec3.fromValues(0,0,3);
@@ -64,7 +67,7 @@ function EngineCore(){
       Engine.Matrices.ModelMatrix = Engine.MatStack.pop();
       Engine.MatStack.push(Engine.Matrices.ModelMatrix);
       Engine.MatStack.push(Engine.Matrices.MVPMatrix);
-      //Create and alias for the current object
+      //Create an alias for the current object
       var obj = Engine.World[obj];
       //Set shader for current object
       gl.useProgram(Engine.Shaders[obj.Shader].Program);
@@ -106,7 +109,7 @@ function EngineCore(){
     gl.viewportWidth = window.innerWidth;
     gl.viewportHeight = window.innerHeight;
     //Call any runtime logic here
-    requestAnimationFrame(Engine.Update, canvas);
+    frame = requestAnimationFrame(Engine.Update, canvas);
     Engine.renderFrame();
     Engine.TimeKeeper.update();
     Engine.AnimPlayer.update();
@@ -139,6 +142,20 @@ function EngineCore(){
       console.groupEnd();
     }, this);
     console.groupEnd();
+  }
+  //==============================================================================
+  //Pause the engine when window has lost focus
+  //==============================================================================
+  this.pause = function(){
+    if(document.hidden){
+      console.log("Paused");
+      cancelAnimationFrame(frame);
+    }
+    else{
+      console.log("Resumed");
+      Engine.TimeKeeper.lastFrame = Date.now();
+      requestAnimationFrame(Engine.Update, canvas);
+    }
   }
   //==============================================================================
   //Take an object and instance it into the world

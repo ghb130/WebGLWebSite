@@ -5,19 +5,23 @@ requirejs(["Code/Utils", "Code/Shader", "Code/Object", "Code/Animation", "Code/C
 var gl = null;
 var canvas = null;
 var Engine = null;
+var frame = null;
 //==============================================================================
 function main(){
   Engine = new EngineCore();
   Engine.init();
+  console.log("%c\nEngine initialization complete.\n\n", 'color: green');
+
   Engine.World.Monkey = Engine.Objects.Monkey;
-  console.log("\nEngine initialization complete.\n\n");
   Engine.Objects.Monkey.transform.setPos(0,0,-3);
+
   var rot = quat.create();
   var axis = vec3.fromValues(0,1,0);
   vec3.normalize(axis, axis);
   quat.setAxisAngle(rot, axis, Math.PI/4);
   Engine.Objects.Monkey.transform.setRotationQuat(rot);
   quat.setAxisAngle(rot, axis, Math.PI/2);
+
   var destTrans = new Transform(undefined, undefined, rot);
   var destTrans2 = new Transform(vec3.fromValues(0,2,0), undefined, undefined);
   var destTrans3 = new Transform(vec3.fromValues(2,2,0), undefined, undefined);
@@ -27,12 +31,7 @@ function main(){
   animInfRot.flags = ANIM_ROT|INT_LINE|BOUNCE|REPEAT|SMOOTHED|RELATIVE;
   var rot = new Animation(animInfRot);
 
-  //var animInfSlide = new animInf(Engine.World.Monkey, [destTrans2, destTrans3, destTrans4], 50);
-  //animInfSlide.flags = ANIM_POS|INT_BEZ|BOUNCE|REPEAT|SMOOTHED|RELATIVE;
-  //var slide = new Animation(animInfSlide);
-
-  Engine.AnimPlayer.addAnim('Spin360',rot);
-//Engine.AnimPlayer.addAnim('SlideLR', slide);
+  Engine.AnimPlayer.addAnim('Spin90',rot);
 
   var trans = new Transform();
   for (var k = -3; k <= 3; k=k+3){
@@ -44,7 +43,7 @@ function main(){
       }
     }
   }
-  console.log(Engine.World);
 
+  console.groupCollapsed("Runtime Logging");
   Engine.Update();
 }
