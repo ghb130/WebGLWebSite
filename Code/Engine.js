@@ -14,6 +14,8 @@ function EngineCore(){
   this.MatStack = new Stack();
   this.Shaders = {};
   this.Objects = {};
+  this.Textures = {};
+  this.Fonts = {};
   this.World = {};
   this.Cameras = [];
   this.AnimPlayer = new AnimPlayer();
@@ -29,6 +31,8 @@ function EngineCore(){
       //==============================================================================
       this.LoadShaders(['Unlit']);
       this.LoadMeshData(['Monkey']);
+      this.LoadExtraTex(['Calibri']);
+      Engine.Fonts['Calibri'] = new fontInfo('Calibri');
       this.Cameras.push(new Camera(this.Cameras.length));
       this.Cameras[0].transform.position = vec3.fromValues(0,0,3);
       this.Matrices.ModelMatrix = mat4.create();
@@ -36,6 +40,7 @@ function EngineCore(){
       this.Matrices.MVPMatrix = mat4.create();
       this.Matrices.TempMatrix = mat4.create();
       gl.clearColor(0.3,0.3,0.3,1);
+      gl.enable(gl.CULL_FACE);
       gl.enable(gl.DEPTH_TEST);
       this.State.initialized = true;
       doneLoading();
@@ -61,7 +66,7 @@ function EngineCore(){
     Engine.MatStack.push(Engine.Matrices.MVPMatrix);
 
     for (var obj in Engine.World){
-    if(Engine.World.hasOwnProperty(obj)){
+    if(Engine.World.hasOwnProperty(obj) && Engine.World[obj].Buffer.position != null){
       //Pop fresh model and mvp Matrices
       Engine.Matrices.MVPMatrix = Engine.MatStack.pop();
       Engine.Matrices.ModelMatrix = Engine.MatStack.pop();
@@ -69,6 +74,7 @@ function EngineCore(){
       Engine.MatStack.push(Engine.Matrices.MVPMatrix);
       //Create an alias for the current object
       var obj = Engine.World[obj];
+      console.log(obj);
       //Set shader for current object
       gl.useProgram(Engine.Shaders[obj.Shader].Program);
       //Perform per object transformations here
@@ -88,12 +94,24 @@ function EngineCore(){
       // gl.vertexAttribPointer(Engine.Shaders[obj.Shader].Attributes.a_Normal, 3, gl.FLOAT, false, 0, 0);
       //Bind Uniforms
       gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, obj.Textures[0]);
+      gl.bindTexture(gl.TEXTURE_2D, obj.Textures.diffuse);
       gl.uniform1i(Engine.Shaders[obj.Shader].Uniforms.u_Sampler, 0);
       gl.uniformMatrix4fv(Engine.Shaders[obj.Shader].Uniforms.u_MVPMatrix, false, Engine.Matrices.MVPMatrix);
       //Draw
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,  obj.Buffer.Index);
-      gl.drawElements(gl.TRIANGLES, obj.Buffer.Index.numVerts, gl.UNSIGNED_SHORT, 0);
+      if(obj.type == 'obj'){
+        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.DEPTH_TEST);
+        gl.disable(gl.BLEND);
+        gl.depthMask(true);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,  obj.Buffer.Index);
+        gl.drawElements(gl.TRIANGLES, obj.Buffer.Index.numVerts, gl.UNSIGNED_SHORT, 0);
+      }
+      else if (obj.type == 'text'){
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        gl.depthMask(false);
+        gl.drawArrays(gl.TRIANGLES, 0, obj.numVerts);
+      }
     }}
   }
   //==============================================================================
@@ -142,6 +160,14 @@ function EngineCore(){
       console.groupEnd();
     }, this);
     console.groupEnd();
+  }
+  //==============================================================================
+  //Dowload and bind extra textures form server
+  //==============================================================================
+  this.LoadExtraTex = function(TexNames){
+    TexNames.forEach(function(element){
+      LoadTex(("Resources/Textures/"+element+".png"), element, Engine);
+    }, this);
   }
   //==============================================================================
   //Pause the engine when window has lost focus

@@ -1,4 +1,4 @@
-requirejs(["Code/Utils", "Code/Shader", "Code/Object", "Code/Animation", "Code/Camera", "Code/Engine"], main);
+requirejs(["Code/Utils", "Code/Shader", "Code/Object", "Code/Text", "Code/Animation", "Code/Camera", "Code/Engine"], main);
 //==============================================================================
 //MAIN - call engine code here
 //Program wide variables:
@@ -14,6 +14,10 @@ function main(){
 
   Engine.World.Monkey = Engine.Objects.Monkey;
   Engine.Objects.Monkey.transform.setPos(0,0,-3);
+
+  var text = new Text2D("Hello World!", "Calibri");
+  Engine.World.Hello = text;
+  console.log(text);
 
   var rot = quat.create();
   var axis = vec3.fromValues(0,1,0);
@@ -33,7 +37,7 @@ function main(){
 
   Engine.AnimPlayer.addAnim('Spin90',rot);
 
-  var trans = new Transform();
+  /*var trans = new Transform();
   for (var k = -3; k <= 3; k=k+3){
     for (var j = -3; j <= 3; j=j+3){
       for (var i = 1; i < 30; i++){
@@ -42,8 +46,9 @@ function main(){
         Engine.World[instance].parent = Engine.World.Monkey;
       }
     }
-  }
+  }*/
 
+  console.log(Engine.World);
   console.groupCollapsed("Runtime Logging");
   Engine.Update();
 }

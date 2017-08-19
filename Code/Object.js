@@ -11,19 +11,20 @@ function Object(name, shader = "Unlit"){
   this.Buffer.normal = null;
   this.Buffer.uv = null;
   this.Buffer.Index = null;
-  this.Textures = [];
+  this.Textures = {};
   this.tag = name;
+  this.type = 'obj';
   this.transform = new Transform();
   this.Shader = shader;
   this.instances = 0;
   this.parent = null;
   this.initialized = false;
   var Addr = "Resources/Models/"+name+".json";
-  var AddrTex = "Resources/Textures/"+name+"_tex.png";
+  var AddrTex = "Resources/Textures/"+name+"_diffuse.png";
   console.log("Requesting: "+Addr);
   LoadMesh(Addr, this);
   console.log("Requesting: "+AddrTex);
-  LoadTex(AddrTex, this);
+  LoadTex(AddrTex, "diffuse", this);
 }
 //==============================================================================
 //Object Intance function. Dont need to reload resources when we instance.
@@ -34,8 +35,9 @@ function ObjInst(name, shader = "Unlit"){
   this.Buffer.normal = null;
   this.Buffer.uv = null;
   this.Buffer.Index = null;
-  this.Textures = [];
+  this.Textures = {};
   this.tag = name;
+  this.type = 'obj';
   this.transform = new Transform();
   this.Shader = shader;
   this.initialized = false;
@@ -43,19 +45,22 @@ function ObjInst(name, shader = "Unlit"){
 //==============================================================================
 //Request texture data from server
 //==============================================================================
-function LoadTex(Addr, obj){
-  obj.Textures.push(gl.createTexture());
+function LoadTex(Addr, type, obj){
+  obj.Textures[type] = gl.createTexture();
   //Create a temporary 1x1 pixel texture until real texture is loaded
-  gl.bindTexture(gl.TEXTURE_2D, obj.Textures[0]);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([50, 50, 50, 255]));
+  gl.bindTexture(gl.TEXTURE_2D, obj.Textures[type]);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([30, 30, 30, 255]));
   var image = new Image();
   image.src = Addr;
   image.addEventListener('load', function(){
     console.groupCollapsed("Receiving Texture...");
     console.log("Loading Texture: "+Addr);
+    gl.bindTexture(gl.TEXTURE_2D, obj.Textures[type]);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.bindTexture(gl.TEXTURE_2D, obj.Textures[0]);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
@@ -74,7 +79,7 @@ function LoadMesh(Addr, obj){
       BindMesh(JSON.parse(req.responseText), obj);
     }
   };
-  req.open("GET", Addr, false);
+  req.open("GET", Addr, true);
   req.send();
 }
 //==============================================================================
