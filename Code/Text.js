@@ -2,20 +2,22 @@
 //2D Text Handler
 //Manages the creation of geometry to display text generated from a font texture atlas
 //==============================================================================
-function Text2D(text, font){
+function Text2D(text, font, color = vec3.create()){
   this.Buffer = {};
   this.Buffer.position = gl.createBuffer();
   this.Buffer.normal = gl.createBuffer();
   this.Buffer.uv = gl.createBuffer();
   this.Textures = {};
   this.Textures.diffuse = Engine.Textures[font];
-  var scale = 1;
+  var scale = 2/canvas.height;
   this.transform = new Transform(undefined, vec3.fromValues(scale, scale, 1), undefined);
   this.Shader = 'Unlit';
   this.type = 'text';
   this.numVerts = 0;
   this.text = text;
   this.font = font;
+  this.parent = null;
+  this.color = color;
 
   this.rebuild = function(){
     var len = this.text.length;
@@ -36,8 +38,8 @@ function Text2D(text, font){
       if(letterInfo){
         var x2 = x + letterInfo.width;
         var u1 = letterInfo.x / xLim;
-        var v1 = (letterInfo.y + size -1) / yLim;
-        var u2 = (letterInfo.x + size -1) / xLim;
+        var v1 = (letterInfo.y + size) / yLim;
+        var u2 = (letterInfo.x + letterInfo.width) / xLim;
         var v2 = letterInfo.y / yLim;
 
         pos[offsetPos + 0] = x;
@@ -53,13 +55,13 @@ function Text2D(text, font){
         uv[offsetUV + 3] = v1;
 
         pos[offsetPos + 6] = x;
-        pos[offsetPos + 7] = -size*line;
+        pos[offsetPos + 7] = size*line;
         pos[offsetPos + 8] = 0;
         uv[offsetUV + 4] = u1;
         uv[offsetUV + 5] = v2;
 
         pos[offsetPos + 9] = x;
-        pos[offsetPos + 10] = -size*line;
+        pos[offsetPos + 10] = size*line;
         pos[offsetPos + 11] = 0;
         uv[offsetUV + 6] = u1;
         uv[offsetUV + 7] = v2;
@@ -71,7 +73,7 @@ function Text2D(text, font){
         uv[offsetUV + 9] = v1;
 
         pos[offsetPos + 15] = x2;
-        pos[offsetPos + 16] = -size*line;
+        pos[offsetPos + 16] = size*line;
         pos[offsetPos + 17] = 0;
         uv[offsetUV + 10] = u2;
         uv[offsetUV + 11] = v2;
@@ -100,7 +102,15 @@ var widths = {"Calibri": [22, 32, 39, 49, 50, 70, 67, 22, 30, 30, 49, 49, 24,
                           48, 63, 56, 87, 51, 48, 46, 30, 38, 30, 49, 49, 29,
                           47, 51, 41, 51, 49, 30, 46, 51, 22, 23, 45, 22, 78,
                           51, 52, 51, 51, 34, 38, 33, 51, 44, 70, 42, 44, 39,
-                          31, 45, 31, 49],};
+                          31, 45, 31, 49],
+              "Verdana": [35, 39, 45, 81, 63, 107, 72, 27, 45, 45, 63, 81, 36,
+                          45, 36, 45, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63,
+                          45, 45, 81, 81, 81, 54, 99, 68, 68, 69, 76, 63, 57,
+                          77, 74, 42, 45, 69, 55, 83, 74, 78, 60, 78, 69, 68,
+                          61, 72, 68, 98, 68, 61, 68, 45, 45, 45, 81, 63, 63,
+                          59, 62, 52, 62, 59, 35, 62, 63, 27, 34, 59, 27, 96,
+                          63, 60, 62, 62, 42, 52, 39, 63, 59, 81, 59, 59, 52,
+                          63, 45, 63, 81],};
 //==============================================================================
 function fontInfo(fontName){
   this.size = 136;

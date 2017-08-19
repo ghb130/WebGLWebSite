@@ -29,10 +29,11 @@ function EngineCore(){
       //Event Listeners here==========================================================
       document.addEventListener("visibilitychange", Engine.pause, false);
       //==============================================================================
-      this.LoadShaders(['Unlit']);
+      this.LoadShaders(['Unlit', 'Text']);
       this.LoadMeshData(['Monkey']);
-      this.LoadExtraTex(['Calibri']);
+      this.LoadExtraTex(['Calibri', 'Verdana']);
       Engine.Fonts['Calibri'] = new fontInfo('Calibri');
+      Engine.Fonts['Verdana'] = new fontInfo('Verdana');
       this.Cameras.push(new Camera(this.Cameras.length));
       this.Cameras[0].transform.position = vec3.fromValues(0,0,3);
       this.Matrices.ModelMatrix = mat4.create();
@@ -74,7 +75,6 @@ function EngineCore(){
       Engine.MatStack.push(Engine.Matrices.MVPMatrix);
       //Create an alias for the current object
       var obj = Engine.World[obj];
-      console.log(obj);
       //Set shader for current object
       gl.useProgram(Engine.Shaders[obj.Shader].Program);
       //Perform per object transformations here

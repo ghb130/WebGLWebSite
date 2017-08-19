@@ -15,10 +15,6 @@ function main(){
   Engine.World.Monkey = Engine.Objects.Monkey;
   Engine.Objects.Monkey.transform.setPos(0,0,-3);
 
-  var text = new Text2D("Hello World!", "Calibri");
-  Engine.World.Hello = text;
-  console.log(text);
-
   var rot = quat.create();
   var axis = vec3.fromValues(0,1,0);
   vec3.normalize(axis, axis);
@@ -37,7 +33,7 @@ function main(){
 
   Engine.AnimPlayer.addAnim('Spin90',rot);
 
-  /*var trans = new Transform();
+  var trans = new Transform();
   for (var k = -3; k <= 3; k=k+3){
     for (var j = -3; j <= 3; j=j+3){
       for (var i = 1; i < 30; i++){
@@ -46,7 +42,12 @@ function main(){
         Engine.World[instance].parent = Engine.World.Monkey;
       }
     }
-  }*/
+  }
+
+  var text = new Text2D("Hello World!", "Verdana", vec3.fromValues(0.5,0.5,0.5));
+  Engine.World.Hello = text;
+  Engine.World.Hello.transform.setPos(1.5,0,0);
+  Engine.World.Hello.parent = Engine.World.Monkey;
 
   console.log(Engine.World);
   console.groupCollapsed("Runtime Logging");

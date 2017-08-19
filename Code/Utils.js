@@ -7,6 +7,31 @@ function EngineState(){
   this.ActiveCamera = 0;
 }
 //==============================================================================
+//Request texture data from server
+//==============================================================================
+function LoadTex(Addr, type, obj){
+  obj.Textures[type] = gl.createTexture();
+  //Create a temporary 1x1 pixel texture until real texture is loaded
+  gl.bindTexture(gl.TEXTURE_2D, obj.Textures[type]);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([30, 30, 30, 255]));
+  var image = new Image();
+  image.src = Addr;
+  image.addEventListener('load', function(){
+    console.groupCollapsed("Receiving Texture...");
+    console.log("Loading Texture: "+Addr);
+    gl.bindTexture(gl.TEXTURE_2D, obj.Textures[type]);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    console.groupEnd();
+  });
+}
+//==============================================================================
 //TIMEKEEPER OBJECT
 //Holds usefull information about time
 //==============================================================================
