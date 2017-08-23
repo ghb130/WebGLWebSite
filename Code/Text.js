@@ -2,13 +2,13 @@
 //2D Text Handler
 //Manages the creation of geometry to display text generated from a font texture atlas
 //==============================================================================
-function Text2D(text, font, color = vec3.create()){
+function Text2D(text, font, color){
   this.Buffer = {};
   this.Buffer.position = gl.createBuffer();
   this.Buffer.normal = gl.createBuffer();
   this.Buffer.uv = gl.createBuffer();
   this.Textures = {};
-  this.Textures.diffuse = Engine.Textures[font];
+  this.Textures.diffuse = Engine.Textures[font+color];
   var scale = 2/canvas.height;
   this.transform = new Transform(undefined, vec3.fromValues(scale, scale, 1), undefined);
   this.Shader = 'Unlit';
@@ -31,59 +31,71 @@ function Text2D(text, font, color = vec3.create()){
     var xLim = Engine.Fonts[font].texWidth;
     var yLim = Engine.Fonts[font].texHeight;
     var size = Engine.Fonts[font].size;
-    var line = 1;
+    var line = 0;
     for (var i = 0; i < len; i++){
       var letter = this.text[i];
-      var letterInfo = Engine.Fonts[font][letter];
-      if(letterInfo){
-        var x2 = x + letterInfo.width;
-        var u1 = letterInfo.x / xLim;
-        var v1 = (letterInfo.y + size) / yLim;
-        var u2 = (letterInfo.x + letterInfo.width) / xLim;
-        var v2 = letterInfo.y / yLim;
-
-        pos[offsetPos + 0] = x;
-        pos[offsetPos + 1] = 0;
-        pos[offsetPos + 2] = 0;
-        uv[offsetUV + 0] = u1;
-        uv[offsetUV + 1] = v1;
-
-        pos[offsetPos + 3] = x2;
-        pos[offsetPos + 4] = 0;
-        pos[offsetPos + 5] = 0;
-        uv[offsetUV + 2] = u2;
-        uv[offsetUV + 3] = v1;
-
-        pos[offsetPos + 6] = x;
-        pos[offsetPos + 7] = size*line;
-        pos[offsetPos + 8] = 0;
-        uv[offsetUV + 4] = u1;
-        uv[offsetUV + 5] = v2;
-
-        pos[offsetPos + 9] = x;
-        pos[offsetPos + 10] = size*line;
-        pos[offsetPos + 11] = 0;
-        uv[offsetUV + 6] = u1;
-        uv[offsetUV + 7] = v2;
-
-        pos[offsetPos + 12] = x2;
-        pos[offsetPos + 13] = 0;
-        pos[offsetPos + 14] = 0;
-        uv[offsetUV + 8] = u2;
-        uv[offsetUV + 9] = v1;
-
-        pos[offsetPos + 15] = x2;
-        pos[offsetPos + 16] = size*line;
-        pos[offsetPos + 17] = 0;
-        uv[offsetUV + 10] = u2;
-        uv[offsetUV + 11] = v2;
-
-        x += letterInfo.width + Engine.Fonts[font].spacing;
-        offsetPos += 18;
-        offsetUV += 12;
+      if(letter == "\n"){
+        x = 0;
+        line++;
+        i++;
+        i++;
       }
-      else {
+      else if (letter == "  ") {
         x += Engine.Fonts[font][" "].width;
+        x += Engine.Fonts[font][" "].width;
+      }
+      else{
+        var letterInfo = Engine.Fonts[font][letter];
+        if(letterInfo){
+          var x2 = x + letterInfo.width;
+          var u1 = letterInfo.x / xLim;
+          var v1 = (letterInfo.y + size) / yLim;
+          var u2 = (letterInfo.x + letterInfo.width) / xLim;
+          var v2 = letterInfo.y / yLim;
+
+          pos[offsetPos + 0] = x;
+          pos[offsetPos + 1] = 0 + size*line*-.8;
+          pos[offsetPos + 2] = 0;
+          uv[offsetUV + 0] = u1;
+          uv[offsetUV + 1] = v1;
+
+          pos[offsetPos + 3] = x2;
+          pos[offsetPos + 4] = 0 + size*line*-.8;
+          pos[offsetPos + 5] = 0;
+          uv[offsetUV + 2] = u2;
+          uv[offsetUV + 3] = v1;
+
+          pos[offsetPos + 6] = x;
+          pos[offsetPos + 7] = size + size*line*-.8;
+          pos[offsetPos + 8] = 0;
+          uv[offsetUV + 4] = u1;
+          uv[offsetUV + 5] = v2;
+
+          pos[offsetPos + 9] = x;
+          pos[offsetPos + 10] = size + size*line*-.8;
+          pos[offsetPos + 11] = 0;
+          uv[offsetUV + 6] = u1;
+          uv[offsetUV + 7] = v2;
+
+          pos[offsetPos + 12] = x2;
+          pos[offsetPos + 13] = 0 + size*line*-.8;
+          pos[offsetPos + 14] = 0;
+          uv[offsetUV + 8] = u2;
+          uv[offsetUV + 9] = v1;
+
+          pos[offsetPos + 15] = x2;
+          pos[offsetPos + 16] = size + size*line*-.8;
+          pos[offsetPos + 17] = 0;
+          uv[offsetUV + 10] = u2;
+          uv[offsetUV + 11] = v2;
+
+          x += letterInfo.width + Engine.Fonts[font].spacing;
+          offsetPos += 18;
+          offsetUV += 12;
+        }
+        else {
+          x += Engine.Fonts[font][" "].width;
+        }
       }
     }
     gl.bindBuffer(gl.ARRAY_BUFFER, this.Buffer.position);

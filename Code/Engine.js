@@ -16,6 +16,7 @@ function EngineCore(){
   this.Objects = {};
   this.Textures = {};
   this.Fonts = {};
+  this.Extensions = {};
   this.World = {};
   this.Cameras = [];
   this.AnimPlayer = new AnimPlayer();
@@ -23,15 +24,18 @@ function EngineCore(){
   //Initializes the Graphics Engine
   //==============================================================================
   this.init = function(){
-    canvas = document.getElementById('WebGL');
+    canvas = document.getElementById('WebGL', {antialias:true});
     try{
       gl = canvas.getContext("experimental-webgl");
+      //Extensions====================================================================
+      this.Extensions.aniso = gl.getExtension("EXT_texture_filter_anisotropic");
+      //==============================================================================
       //Event Listeners here==========================================================
       document.addEventListener("visibilitychange", Engine.pause, false);
       //==============================================================================
-      this.LoadShaders(['Unlit', 'Text']);
+      this.LoadShaders(['Unlit']);
       this.LoadMeshData(['Monkey']);
-      this.LoadExtraTex(['Calibri', 'Verdana']);
+      this.LoadExtraTex(['CalibriWhite', 'VerdanaWhite']);
       Engine.Fonts['Calibri'] = new fontInfo('Calibri');
       Engine.Fonts['Verdana'] = new fontInfo('Verdana');
       this.Cameras.push(new Camera(this.Cameras.length));

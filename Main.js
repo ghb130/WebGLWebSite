@@ -27,13 +27,13 @@ function main(){
   var destTrans3 = new Transform(vec3.fromValues(2,2,0), undefined, undefined);
   var destTrans4 = new Transform(vec3.fromValues(2,0,0), undefined, undefined);
 
-  var animInfRot = new animInf(Engine.World.Monkey, destTrans, 50);
+  var animInfRot = new animInf(Engine.World.Monkey, destTrans, 25);
   animInfRot.flags = ANIM_ROT|INT_LINE|BOUNCE|REPEAT|SMOOTHED|RELATIVE;
   var rot = new Animation(animInfRot);
 
   Engine.AnimPlayer.addAnim('Spin90',rot);
 
-  var trans = new Transform();
+  /*var trans = new Transform();
   for (var k = -3; k <= 3; k=k+3){
     for (var j = -3; j <= 3; j=j+3){
       for (var i = 1; i < 30; i++){
@@ -42,9 +42,12 @@ function main(){
         Engine.World[instance].parent = Engine.World.Monkey;
       }
     }
-  }
-
-  var text = new Text2D("Hello World!", "Verdana", vec3.fromValues(0.5,0.5,0.5));
+  }*/
+  var string =
+  `Hello
+    world
+  test`;
+  var text = new Text2D(string, "Verdana", "White");
   Engine.World.Hello = text;
   Engine.World.Hello.transform.setPos(1.5,0,0);
   Engine.World.Hello.parent = Engine.World.Monkey;
