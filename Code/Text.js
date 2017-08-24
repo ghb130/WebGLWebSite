@@ -2,14 +2,14 @@
 //2D Text Handler
 //Manages the creation of geometry to display text generated from a font texture atlas
 //==============================================================================
-function Text2D(text, font, color){
+function Text2D(text, font, color, scale = 1){
   this.Buffer = {};
   this.Buffer.position = gl.createBuffer();
   this.Buffer.normal = gl.createBuffer();
   this.Buffer.uv = gl.createBuffer();
   this.Textures = {};
   this.Textures.diffuse = Engine.Textures[font+color];
-  var scale = 2/canvas.height;
+  var scale = 2/canvas.height*scale;
   this.transform = new Transform(undefined, vec3.fromValues(scale, scale, 1), undefined);
   this.Shader = 'Unlit';
   this.type = 'text';

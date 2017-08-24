@@ -27,35 +27,36 @@ function AnimPlayer(){
 //Arguments:
 //AnimInf - an instance of the animinf function which provides animation information.
 //Flags:
-var ANIM_PSR =    0b00000000000111;
-var ANIM_POS =    0b00000000000001;
+var ANIM_PSR =    0b000000000000111;
+var ANIM_POS =    0b000000000000001;
 //0b0000000000001 - animate position
-var ANIM_SCALE =  0b00000000000010;
+var ANIM_SCALE =  0b000000000000010;
 //0b0000000000010 - animate scale
-var ANIM_ROT =    0b00000000000100;
+var ANIM_ROT =    0b000000000000100;
 //0b0000000000100 - animate rotation
-var INT_LINE =    0b00000000001000;
+var INT_LINE =    0b000000000001000;
 //0b0000000001000 - linear interpolation
-var INT_BEZ =     0b00000000010000;
+var INT_BEZ =     0b000000000010000;
 //0b0000000010000 - bezier interpolation
-var INT_HERM =    0b00000000100000;
+var INT_HERM =    0b000000000100000;
 //0b0000000100000 - hermite interpolation
-var MULTI =       0b00000001000000;
+var MULTI =       0b000000001000000;
 //0b0000001000000 - multiple objects
-var REPEAT =      0b00000010000000;
+var REPEAT =      0b000000010000000;
 //0b0000010000000 - loop indefinitely
-var BOUNCE =      0b00000100000000;
+var BOUNCE =      0b000000100000000;
 //0b0000100000000 - Reverse animation when it reaches the end
-var CIRCULAR =    0b00001000000000;
+var CIRCULAR =    0b000001000000000;
 //0b0000100000000 - similar to loop but will repeat starting at -1.0 percent
-var REVERSED =    0b00010000000000;
+var REVERSED =    0b000010000000000;
 //0b0001000000000 - reverses direction of motion
-var SMOOTHED =    0b00100000000000;
+var SMOOTHED =    0b000100000000000;
 //0b0010000000000 - whether or not to smooth the motion
-var RELATIVE =    0b01000000000000;
+var RELATIVE =    0b001000000000000;
 //0b010000000000 - whether or not to smooth the motion
-var COMPOUND =    0b10000000000000;
+var COMPOUND =    0b010000000000000;
 //0b100000000000 - whether or not to reset the transform of the object at the end of the animation
+var ANIMP =       0b100000000000000;
 //In the case that non linear interpolation is used, trans is expected to be an array of 3 transforms
 //==============================================================================
 function Animation(animInf){
@@ -99,6 +100,7 @@ function Animation(animInf){
   this.loop = (flags&REPEAT);
   this.bounce = (flags&BOUNCE);
   this.smoothed = (flags&SMOOTHED);
+  this.animp = (flags&ANIMP);
   this.smoothVectors = [vec3.fromValues(0,0,0), vec3.fromValues(0,1,0), vec3.fromValues(1,1,0), vec3.fromValues(1,0,0)];
 
   if(flags&INT_LINE){
@@ -182,6 +184,9 @@ function Animation(animInf){
         }
         if(flags&ANIM_ROT){
           quat.slerp(this.deltaTrans.rotation, this.initTrans.rotation, this.destTrans.rotation, perc);
+          if(this.animp){
+            quat.slerp(this.deltaTrans.parentRot, this.initTrans.parentRot, this.destTrans.parentRot, perc);
+          }
         }
         this.cachedTrans.difference(this.deltaTrans);
         this.Object.transform.add(this.cachedTrans);
@@ -268,6 +273,9 @@ function Animation(animInf){
         }
         if(flags&ANIM_ROT){
           quat.slerp(this.deltaTrans.rotation, this.initTrans.rotation, this.destTrans[2].rotation, perc);
+          if(this.animp){
+            quat.slerp(this.deltaTrans.parentRot, this.initTrans.parentRot, this.destTrans.parentRot, perc);
+          }
         }
         this.cachedTrans.difference(this.deltaTrans);
         this.Object.transform.add(this.cachedTrans);
@@ -354,6 +362,9 @@ function Animation(animInf){
         }
         if(flags&ANIM_ROT){
           quat.slerp(this.deltaTrans.rotation, this.initTrans.rotation, this.destTrans[2].rotation, perc);
+          if(this.animp){
+            quat.slerp(this.deltaTrans.parentRot, this.initTrans.parentRot, this.destTrans.parentRot, perc);
+          }
         }
         this.cachedTrans.difference(this.deltaTrans);
         this.Object.transform.add(this.cachedTrans);

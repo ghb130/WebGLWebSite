@@ -112,6 +112,7 @@ function EngineCore(){
       }
       else if (obj.type == 'text'){
         gl.enable(gl.BLEND);
+        gl.disable(gl.CULL_FACE);
         gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
         gl.depthMask(false);
         gl.drawArrays(gl.TRIANGLES, 0, obj.numVerts);
@@ -215,6 +216,7 @@ function EngineCore(){
     if(obj.parent != null){
       this.evalParent(obj.parent);
     }
+    obj.transform.applyParent(Engine.Matrices.ModelMatrix);
     obj.transform.apply(Engine.Matrices.ModelMatrix);
   }
 }

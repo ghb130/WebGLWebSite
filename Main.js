@@ -15,44 +15,55 @@ function main(){
   Engine.World.Monkey = Engine.Objects.Monkey;
   Engine.Objects.Monkey.transform.setPos(0,0,-3);
 
-  var rot = quat.create();
-  var axis = vec3.fromValues(0,1,0);
-  vec3.normalize(axis, axis);
-  quat.setAxisAngle(rot, axis, Math.PI/4);
-  Engine.Objects.Monkey.transform.setRotationQuat(rot);
-  quat.setAxisAngle(rot, axis, Math.PI/2);
+  var destTrans = new Transform();
+  destTrans.setAxisAngle(vec3.fromValues(0,1,0), Math.PI);
+  var animInfRot = new animInf(Engine.World.Monkey, destTrans, 15);
+  animInfRot.flags = ANIM_ROT|INT_LINE|CIRCULAR|REPEAT|RELATIVE;
+  var rotate = new Animation(animInfRot);
 
-  var destTrans = new Transform(undefined, undefined, rot);
-  var destTrans2 = new Transform(vec3.fromValues(0,2,0), undefined, undefined);
-  var destTrans3 = new Transform(vec3.fromValues(2,2,0), undefined, undefined);
-  var destTrans4 = new Transform(vec3.fromValues(2,0,0), undefined, undefined);
+  Engine.AnimPlayer.addAnim('Spin90',rotate);
 
-  var animInfRot = new animInf(Engine.World.Monkey, destTrans, 25);
-  animInfRot.flags = ANIM_ROT|INT_LINE|BOUNCE|REPEAT|SMOOTHED|RELATIVE;
-  var rot = new Animation(animInfRot);
-
-  Engine.AnimPlayer.addAnim('Spin90',rot);
-
-  /*var trans = new Transform();
+/*  var trans = new Transform();
   for (var k = -3; k <= 3; k=k+3){
     for (var j = -3; j <= 3; j=j+3){
-      for (var i = 1; i < 30; i++){
+      for (var i = 1; i < 10; i++){
         trans.setPos(k,j,-3*i);
         var instance = Engine.Instantiate(Engine.Objects.Monkey, trans);
         Engine.World[instance].parent = Engine.World.Monkey;
       }
     }
   }*/
+
   var string =
-  `Hello
-    world
-  test`;
+  `Hours`;
   var text = new Text2D(string, "Verdana", "White");
   Engine.World.Hello = text;
-  Engine.World.Hello.transform.setPos(1.5,0,0);
+  Engine.World.Hello.transform.setPos(1,0,0);
   Engine.World.Hello.parent = Engine.World.Monkey;
 
-  console.log(Engine.World);
+  destTrans = new Transform();
+  destTrans.setPAxisAngle(vec3.fromValues(0,0,1), Math.PI);
+  animInfRot = new animInf(Engine.World.Hello, destTrans, 10);
+  animInfRot.flags = ANIM_ROT|INT_LINE|CIRCULAR|REPEAT|ANIMP;
+  rotate = new Animation(animInfRot);
+
+  Engine.AnimPlayer.addAnim('TextSpin', rotate);
+
+  var string =
+  `Minutes`;
+  var text = new Text2D(string, "Verdana", "White", 0.75);
+  Engine.World.Minutes = text;
+  Engine.World.Minutes.transform.setPos(1.5,0,0);
+  Engine.World.Minutes.parent = Engine.World.Monkey;
+
+  destTrans = new Transform();
+  destTrans.setPAxisAngle(vec3.fromValues(0,0,1), Math.PI);
+  animInfRot = new animInf(Engine.World.Minutes, destTrans, 120);
+  animInfRot.flags = ANIM_ROT|INT_LINE|CIRCULAR|REPEAT|ANIMP;
+  rotate = new Animation(animInfRot);
+
+  Engine.AnimPlayer.addAnim('TextSpin2', rotate);
+
   console.groupCollapsed("Runtime Logging");
   Engine.Update();
 }

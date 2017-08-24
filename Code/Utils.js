@@ -37,7 +37,7 @@ function LoadTex(Addr, type, obj){
 //Holds usefull information about time
 //==============================================================================
 function TimeKeeper(){
-  this.initTime = Date.now();
+  this.initTime = window.performance.now();
   this.lastFrame = this.initTime;
   this.deltaTime = 16;
   this.frameRate = 60;
@@ -47,8 +47,8 @@ function TimeKeeper(){
   this.lastFrames = [60,60,60,60,60];
   this.update = function(){
     if(this.frameRate == Infinity){this.frameRate=60}
-    this.deltaTime = Date.now()-this.lastFrame;
-    this.lastFrame = Date.now();
+    this.deltaTime = window.performance.now()-this.lastFrame;
+    this.lastFrame = window.performance.now();
     this.lastFrames.shift();
     this.lastFrames.push((1000/this.deltaTime));
     for (var i = 0; i < this.lastFrames.length; i++){
@@ -63,7 +63,7 @@ function TimeKeeper(){
         "CPU Time: "+this.frameTime.toString()+" ms<br>"+
         "Frametime: "+this.interFrameTime.toString()+" ms";
         Engine.TimeKeeper.ticked = false;
-      }, 50);
+      }, 75);
     }
   }
 }
@@ -75,6 +75,7 @@ function Transform(pos = vec3.create(), scale = vec3.fromValues(1,1,1), rot = qu
   this.position = vec3.create();
   this.scale = vec3.fromValues(1,1,1);
   this.rotation = quat.create();
+  this.parentRot = quat.create();
   vec3.copy(this.position, pos);
   vec3.copy(this.scale, scale);
   quat.copy(this.rotation, rot);
@@ -83,6 +84,11 @@ function Transform(pos = vec3.create(), scale = vec3.fromValues(1,1,1), rot = qu
     var prs = mat4.create();
     mat4.fromRotationTranslationScale(prs, this.rotation, this.position, this.scale);
     mat4.multiply(matrix,matrix,prs);
+  }
+  this.applyParent = function(matrix){
+    var r = mat4.create();
+    mat4.fromQuat(r, this.parentRot);
+    mat4.multiply(matrix, matrix, r);
   }
   this.setPos = function(x,y,z){
     vec3.set(this.position, x, y, z);
@@ -93,16 +99,25 @@ function Transform(pos = vec3.create(), scale = vec3.fromValues(1,1,1), rot = qu
   this.setRotationQuat = function(quat){
     vec4.copy(this.rotation, quat);
   }
+  this.setAxisAngle = function(vector, rad){
+    quat.setAxisAngle(this.rotation, vector, rad);
+  }
+  this.setPAxisAngle = function(vector, rad){
+    quat.setAxisAngle(this.parentRot, vector, rad);
+  }
   this.copy = function(trans){
     vec3.copy(this.position, trans.position);
     vec3.copy(this.scale, trans.scale);
     quat.copy(this.rotation, trans.rotation);
+    quat.copy(this.parentRot, trans.parentRot);
   }
   this.add = function(trans){
     vec3.add(this.position, this.position, trans.position);
     vec3.add(this.scale, this.scale, trans.scale);
     quat.multiply(this.rotation, this.rotation, trans.rotation);
     quat.normalize(this.rotation, this.rotation);
+    quat.multiply(this.parentRot, this.parentRot, trans.parentRot);
+    quat.normalize(this.parentRot, this.parentRot);
   }
   this.difference = function(trans){
     vec3.subtract(this.position,  trans.position, this.position);
@@ -111,6 +126,9 @@ function Transform(pos = vec3.create(), scale = vec3.fromValues(1,1,1), rot = qu
     quat.invert(invQuat, trans.rotation);
     quat.multiply(this.rotation, this.rotation, invQuat);
     quat.normalize(this.rotation, this.rotation);
+    quat.invert(invQuat, trans.parentRot);
+    quat.multiply(this.parentRot, this.parentRot, invQuat);
+    quat.normalize(this.parentRot, this.parentRot);
   }
 }
 //==============================================================================
