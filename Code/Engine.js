@@ -71,7 +71,7 @@ function EngineCore(){
     Engine.MatStack.push(Engine.Matrices.MVPMatrix);
 
     for (var obj in Engine.World){
-    if(Engine.World.hasOwnProperty(obj) && Engine.World[obj].Buffer.position != null){
+    if(Engine.World.hasOwnProperty(obj) && Engine.World[obj].Buffer.position != null && Engine.World[obj].initialized){
       //Pop fresh model and mvp Matrices
       Engine.Matrices.MVPMatrix = Engine.MatStack.pop();
       Engine.Matrices.ModelMatrix = Engine.MatStack.pop();
@@ -115,6 +115,13 @@ function EngineCore(){
         gl.disable(gl.CULL_FACE);
         gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
         gl.depthMask(false);
+        gl.drawArrays(gl.TRIANGLES, 0, obj.numVerts);
+      }
+      else if (obj.type == 'img'){
+        gl.enable(gl.CULL_FACE);
+        gl.enable(gl.DEPTH_TEST);
+        gl.disable(gl.BLEND);
+        gl.depthMask(true);
         gl.drawArrays(gl.TRIANGLES, 0, obj.numVerts);
       }
     }}
@@ -184,7 +191,7 @@ function EngineCore(){
     }
     else{
       console.log("Resumed");
-      Engine.TimeKeeper.lastFrame = Date.now();
+      Engine.TimeKeeper.lastFrame = window.performance.now();
       requestAnimationFrame(Engine.Update, canvas);
     }
   }

@@ -16,6 +16,7 @@ function Text2D(text, font, color, scale = 1){
   this.numVerts = 0;
   this.text = text;
   this.font = font;
+  this.initialized = true;
   this.parent = null;
   this.color = color;
 

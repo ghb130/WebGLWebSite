@@ -19,6 +19,9 @@ function LoadTex(Addr, type, obj){
   image.addEventListener('load', function(){
     console.groupCollapsed("Receiving Texture...");
     console.log("Loading Texture: "+Addr);
+    obj.Textures[type].x = image.width;
+    obj.Textures[type].y = image.height;
+    console.log(image.width+" px by "+image.height+" px");
     gl.bindTexture(gl.TEXTURE_2D, obj.Textures[type]);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
@@ -170,5 +173,5 @@ function animInf(obj, trans, speed, count = 1){
   this.count = count;
   this.flags = 0b000000000000;
   this.callback = null;
-  this.smoothing = 1;
+  this.smoothType = 'square';
 }

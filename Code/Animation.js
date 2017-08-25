@@ -8,6 +8,7 @@ function AnimPlayer(){
     for (var anim in this.Animations){
       if (this.Animations.hasOwnProperty(anim)){
         if(this.Animations[anim].finished){
+          this.Animations[anim].callback;
           delete this.Animations[anim];
         }
         else{
@@ -59,7 +60,7 @@ var COMPOUND =    0b010000000000000;
 var ANIMP =       0b100000000000000;
 //In the case that non linear interpolation is used, trans is expected to be an array of 3 transforms
 //==============================================================================
-function Animation(animInf){
+function Keyframe(animInf){
   this.Object = animInf.Object;
   if(animInf.flags&RELATIVE){
     if(animInf.flags&INT_LINE){
@@ -86,6 +87,8 @@ function Animation(animInf){
   this.cachedTrans = new Transform();
   this.speed = animInf.speed;
   this.count = animInf.count;
+  this.callback = animInf.callback;
+  this.smoothType = animInf.smoothType;
   this.percent = 0.0;
   this.finished = false;
   this.upTick = true;
@@ -101,7 +104,10 @@ function Animation(animInf){
   this.bounce = (flags&BOUNCE);
   this.smoothed = (flags&SMOOTHED);
   this.animp = (flags&ANIMP);
-  this.smoothVectors = [vec3.fromValues(0,0,0), vec3.fromValues(0,1,0), vec3.fromValues(1,1,0), vec3.fromValues(1,0,0)];
+  this.smoothVectors = {};
+  this.smoothVectors.square = [vec3.fromValues(0,0,0), vec3.fromValues(0,1,0), vec3.fromValues(1,1,0), vec3.fromValues(1,0,0)];
+  this.smoothVectors.rightHeavy = [vec3.fromValues(0,0,0), vec3.fromValues(0.5,1,0), vec3.fromValues(1,1,0), vec3.fromValues(1,0,0)];
+  this.smoothVectors.leftHeavy = [vec3.fromValues(0,0,0), vec3.fromValues(0,1,0), vec3.fromValues(0.5,1,0), vec3.fromValues(1,0,0)];
 
   if(flags&INT_LINE){
     this.update = function(){
@@ -169,7 +175,7 @@ function Animation(animInf){
         var perc = null;
         if(this.smoothed){
           var proxyTrans = vec3.create();
-          vec3.bezier(proxyTrans, this.smoothVectors[0], this.smoothVectors[1], this.smoothVectors[2], this.smoothVectors[3], this.percent);
+          vec3.bezier(proxyTrans, this.smoothVectors[this.smoothType][0], this.smoothVectors[this.smoothType][1], this.smoothVectors[this.smoothType][2], this.smoothVectors[this.smoothType][3], this.percent);
           perc = proxyTrans[0];
         }
         else{perc = this.percent;}
@@ -259,7 +265,7 @@ function Animation(animInf){
         var perc = null;
         if(this.smoothed){
           var proxyTrans = vec3.create();
-          vec3.bezier(proxyTrans, this.smoothVectors[0], this.smoothVectors[1], this.smoothVectors[2], this.smoothVectors[3], this.percent);
+          vec3.bezier(proxyTrans, this.smoothVectors[this.smoothType][0], this.smoothVectors[this.smoothType][1], this.smoothVectors[this.smoothType][2], this.smoothVectors[this.smoothType][3], this.percent);
           perc = proxyTrans[0];
         }
         else{perc = this.percent;}
@@ -348,7 +354,7 @@ function Animation(animInf){
         var perc = null;
         if(this.smoothed){
           var proxyTrans = vec3.create();
-          vec3.bezier(proxyTrans, this.smoothVectors[0], this.smoothVectors[1], this.smoothVectors[2], this.smoothVectors[3], this.percent);
+          vec3.bezier(proxyTrans, this.smoothVectors[this.smoothType][0], this.smoothVectors[this.smoothType][1], this.smoothVectors[this.smoothType][2], this.smoothVectors[this.smoothType][3], this.percent);
           perc = proxyTrans[0];
         }
         else{perc = this.percent;}
