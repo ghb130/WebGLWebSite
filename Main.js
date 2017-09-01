@@ -84,7 +84,5 @@ function main(){
   rotate = new Keyframe(animInfRot);
 
   Engine.AnimPlayer.addAnim('TextSpin3', rotate);
-
-  console.groupCollapsed("Runtime Logging");
   Engine.Update();
 }

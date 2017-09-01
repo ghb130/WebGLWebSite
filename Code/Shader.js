@@ -10,10 +10,17 @@ function Shader(name){
   this.Program = gl.createProgram();
   this.Attributes = {};
   this.Uniforms = {};
+  this.compiled = false;
+  this.compile(name)
+  .then(()=>{this.compiled = true;})
+  .catch(()=>{console.log('Failed to compile shader.');});
+}
+Shader.prototype.compile = async function (name) {
+  let vShader =  Parse("Shaders/"+name+"_v.glsl", gl);
+  let fShader =  Parse("Shaders/"+name+"_f.glsl", gl);
+  [vShader, fShader] = [await vShader, await fShader];
 
-  var vShader = Parse("Shaders/"+name+"_v.glsl", gl);
-  var fShader = Parse("Shaders/"+name+"_f.glsl", gl);
-
+  console.groupCollapsed("Shader Compilation: " + name);
   if(fShader == null || vShader == null){
     console.log("Shaders failed to compile.");
     return null;
@@ -187,46 +194,44 @@ function Shader(name){
     console.log("No fragment uniforms.\n\n");
   }
   console.groupEnd();
+  console.groupEnd();
 }
 //==============================================================================
 //Load code from server and compile
 //==============================================================================
-function Parse(url, gl){
-  var req = new XMLHttpRequest();
-  req.open('GET', url, false);
-  req.send();
-
+async function Parse(url, gl){
+  try{
+    var shaderCode = await download(url);
+  } catch (e) {console.log(e); return null;};
+  console.groupCollapsed("Receiving Shader: "+url);
   console.groupCollapsed("GLSL Body");
-  console.log(req.responseText);
+  console.log(shaderCode);
   console.groupEnd();
-  if(req.status === 200){
-    var glShader;
-    if(url.includes("_f.glsl")){
-      console.log("Fragment Shader compilation started...");
-      glShader = gl.createShader(gl.FRAGMENT_SHADER);
-    }
-    else if(url.includes("_v.glsl")){
-      console.log("Vertex Shader compilation started...");
-      glShader = gl.createShader(gl.VERTEX_SHADER);
-    }
-    else{
-      console.log("Shader not found in file.");
-      return null;
-    }
-    gl.shaderSource(glShader, req.responseText);
-    gl.compileShader(glShader);
-
-    if(!gl.getShaderParameter(glShader, gl.COMPILE_STATUS)){
-      console.log("Failed to compile shader.");
-      return null;
-    }
-    console.log("Shader compilation complete.\n\n");
-    return glShader;
+  var glShader;
+  if(url.includes("_f.glsl")){
+    console.log("Fragment Shader compilation started...");
+    glShader = gl.createShader(gl.FRAGMENT_SHADER);
+  }
+  else if(url.includes("_v.glsl")){
+    console.log("Vertex Shader compilation started...");
+    glShader = gl.createShader(gl.VERTEX_SHADER);
   }
   else{
-    console.log("Failed to load shader code from server.\n");
+    console.log("Shader not found in file.");
+    console.groupEnd();
     return null;
   }
+  gl.shaderSource(glShader, shaderCode);
+  gl.compileShader(glShader);
+
+  if(!gl.getShaderParameter(glShader, gl.COMPILE_STATUS)){
+    console.log("Failed to compile shader.");
+    console.groupEnd();
+    return null;
+  }
+  console.log("Shader compilation complete.\n\n");
+  console.groupEnd();
+  return glShader;
 }
 //==============================================================================
 //Supportive struct object.

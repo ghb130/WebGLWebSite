@@ -5,7 +5,7 @@
 //Properties:
 //
 //==============================================================================
-function Object(name, shader = "Unlit"){
+function Mesh(name, shader = "Unlit"){
   this.Buffer = {};
   this.Buffer.position = null;
   this.Buffer.normal = null;
@@ -29,7 +29,7 @@ function Object(name, shader = "Unlit"){
 //==============================================================================
 //Object Intance function. Dont need to reload resources when we instance.
 //==============================================================================
-function ObjInst(name, shader = "Unlit"){
+function MeshInst(name, shader = "Unlit"){
   this.Buffer = {};
   this.Buffer.position = null;
   this.Buffer.normal = null;

@@ -71,7 +71,7 @@ function EngineCore(){
     Engine.MatStack.push(Engine.Matrices.MVPMatrix);
 
     for (var obj in Engine.World){
-    if(Engine.World.hasOwnProperty(obj) && Engine.World[obj].Buffer.position != null && Engine.World[obj].initialized){
+    if(Engine.World.hasOwnProperty(obj) && Engine.Shaders[Engine.World[obj].Shader].compiled!=false &&Engine.World[obj].initialized){
       //Pop fresh model and mvp Matrices
       Engine.Matrices.MVPMatrix = Engine.MatStack.pop();
       Engine.Matrices.ModelMatrix = Engine.MatStack.pop();
@@ -152,12 +152,10 @@ function EngineCore(){
   //Shaders must use the (shaderName)_(f/v).glsl naming convention
   //==============================================================================
   this.LoadShaders = function(ShaderNames){
-    console.group("Shader Compilation");
+    console.group("Shader Loading");
     ShaderNames.forEach(function(element){
-        console.groupCollapsed("Shader: "+element);
+        console.log("Requesting Shader: "+element);
         this.Shaders[element] = new Shader(element);
-        console.groupEnd();
-        console.log("Succesfully loaded shader: " + element);
     }, this);
     console.groupEnd();
   }
@@ -165,10 +163,10 @@ function EngineCore(){
   //Download and bind mesh data from server
   //==============================================================================
   this.LoadMeshData = function(MeshNames){
-    console.group("Mesh Processing");
+    console.group("Mesh Loading");
     MeshNames.forEach(function(element){
       console.groupCollapsed("Mesh: "+element);
-      this.Objects[element] = new Object(element);
+      this.Objects[element] = new Mesh(element);
       console.groupEnd();
     }, this);
     console.groupEnd();
@@ -207,7 +205,7 @@ function EngineCore(){
   //Duplicate an object. Return duplicate.
   //==============================================================================
   this.Duplicate = function(obj, name, trans){
-    var newObj = new ObjInst(name);
+    var newObj = new MeshInst(name);
     newObj.Buffer = obj.Buffer;
     newObj.Textures = obj.Textures;
     if(trans != null){newObj.transform.copy(trans);}

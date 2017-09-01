@@ -7,6 +7,21 @@ function EngineState(){
   this.ActiveCamera = 0;
 }
 //==============================================================================
+//General Server Request (Promisified)
+//==============================================================================
+function download(url){
+  return new Promise(function (res, rej){
+    let req = new XMLHttpRequest();
+    req.onload = function(){
+      if(this.status == 200) res(req.responseText);
+      else rej(req.statusText);
+    }
+    req.onerror = function(){rej(req.statusText);}
+    req.open("GET", url);
+    req.send();
+  });
+}
+//==============================================================================
 //Request texture data from server
 //==============================================================================
 function LoadTex(Addr, type, obj){
