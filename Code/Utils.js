@@ -51,6 +51,34 @@ function LoadTex(Addr, type, obj){
   });
 }
 //==============================================================================
+//Request NPOT texture data from server for img plane
+//==============================================================================
+function LoadNPOTTex(Addr, type, obj){
+  obj.Textures[type] = gl.createTexture();
+  //Create a temporary 1x1 pixel texture until real texture is loaded
+  gl.bindTexture(gl.TEXTURE_2D, obj.Textures[type]);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([30, 30, 30, 255]));
+  var image = new Image();
+  image.src = Addr;
+  image.addEventListener('load', function(){
+    console.groupCollapsed("Receiving Texture...");
+    console.log("Loading Texture: "+Addr);
+    obj.Textures[type].width = image.width;
+    obj.Textures[type].height = image.height;
+    console.log(image.width+" px by "+image.height+" px");
+    gl.bindTexture(gl.TEXTURE_2D, obj.Textures[type]);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameterf(gl.TEXTURE_2D, Engine.Extensions.aniso.TEXTURE_MAX_ANISOTROPY_EXT, 4);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    if(obj.type = 'img') obj.build();
+    console.groupEnd();
+  });
+}
+//==============================================================================
 //TIMEKEEPER OBJECT
 //Holds usefull information about time
 //==============================================================================

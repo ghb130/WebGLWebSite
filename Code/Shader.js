@@ -20,7 +20,7 @@ Shader.prototype.compile = async function (name) {
   let fShader =  Parse("Shaders/"+name+"_f.glsl", gl);
   [vShader, fShader] = [await vShader, await fShader];
 
-  console.groupCollapsed("Shader Compilation: " + name);
+  console.groupCollapsed("Shader Parsing: " + name);
   if(fShader == null || vShader == null){
     console.log("Shaders failed to compile.");
     return null;
@@ -56,7 +56,7 @@ Shader.prototype.compile = async function (name) {
   var FindStruct = /struct (\w+\b).?{[\s\S]+?};/gi;
   var SplitStruct = /struct (\w+).?{[\s\S]([\s\S]+)+}/i;
   var ParseStruct = /(.+\b) (\w+)/gi;
-  var NameField = /.+\b (\w+)/i;
+  var NameField = /(\b.+\b) (\w+)/i;
   //Pre-process struct data
   var vStructs = [];
   var fStructs = [];
@@ -69,7 +69,8 @@ Shader.prototype.compile = async function (name) {
       vStructs.push(new Struct(sNameBody[1]));
       (sNameBody[2].match(ParseStruct)).forEach(function(line){
         var fName = line.match(NameField);
-        vStructs[index].fields.push(fName[1]);
+        vStructs[index].fields.push(fName[2]);
+        vStructs[index].types.push(fName[1]);
       }, this);
       index++;
     }, this);
@@ -105,10 +106,12 @@ Shader.prototype.compile = async function (name) {
       //This is an array uniform, so handle accordingly
       let size = parseInt(split[3]);
       this.Uniforms[split[2]] = [];
+      Engine.ShaderVars[split[2]] = [];
       let findStruct = true;
       //Iterate over the length of the array
       for(var i = 0; i < size; i++){
         this.Uniforms[split[2]].push({});
+        Engine.ShaderVars[split[2]].push({});
         //Look to see if the uniform type matches a struct
         if (findStruct){
           findStruct = false;
@@ -121,6 +124,7 @@ Shader.prototype.compile = async function (name) {
               for(var k = 0; k < vStructs[j].fields.length; k++){
                 let uniName = split[2]+'['+i+']'+'.'+vStructs[j].fields[k];
                 this.Uniforms[split[2]][i][vStructs[j].fields[k]] = gl.getUniformLocation(this.Program, uniName);
+                Engine.ShaderVars[split[2]][i][vStructs[j].fields[k]] = null;
               }
             }
           }
@@ -130,13 +134,31 @@ Shader.prototype.compile = async function (name) {
           console.log('Matched uniform '+split[2]+'['+i+']'+' to basic type: '+split[1]);
           let uniName = split[2]+'['+i+']';
           this.Uniforms[split[2]][i] = gl.getUniformLocation(this.Program, uniName);
+          Engine.ShaderVars[split[2]][i] = null;
         }
       }
       console.groupEnd();
     }
     else{
-      this.Uniforms[split[2]] = gl.getUniformLocation(this.Program, split[2]);
-      console.log("Saved uniform location: "+split[2]);
+      this.Uniforms[split[2]] = {};
+      Engine.ShaderVars[split[2]] = {};
+      let Struct = false;
+      for(var j = 0; j < vStructs.length; j++){
+        if(split[1] == vStructs[j].name){
+          Struct = true;
+          for(var k = 0; k < vStructs[j].fields.length; k++){
+            let uniName = split[2]+'.'+vStructs[j].fields[k];
+            this.Uniforms[split[2]][vStructs[j].fields[k]] = gl.getUniformLocation(this.Program, uniName);
+            Engine.ShaderVars[split[2]][vStructs[j].fields[k]] = null;
+          }
+          console.log("Saved struct uniform location: "+split[2]);
+        }
+      }
+      if(!Struct){
+        this.Uniforms[split[2]] = gl.getUniformLocation(this.Program, split[2]);
+        Engine.ShaderVars[split[2]] = null;
+        console.log("Saved uniform location: "+split[2]);
+      }
     }
   }, this);
   //For each uniform in ---fragment--- shader, find name and init
@@ -151,10 +173,12 @@ Shader.prototype.compile = async function (name) {
           //This is an array uniform, so handle accordingly
           let size = parseInt(split[3]);
           this.Uniforms[split[2]] = [];
+          Engine.ShaderVars[split[2]] = [];
           let findStruct = true;
           //Iterate over the length of the array
           for(var i = 0; i < size; i++){
             this.Uniforms[split[2]].push({});
+            Engine.ShaderVars[split[2]].push({});
             //Look to see if the uniform type matches a struct
             if (findStruct){
               findStruct = false;
@@ -167,6 +191,7 @@ Shader.prototype.compile = async function (name) {
                   for(var k = 0; k < vStructs[j].fields.length; k++){
                     let uniName = split[2]+'['+i+']'+'.'+vStructs[j].fields[k];
                     this.Uniforms[split[2]][i][vStructs[j].fields[k]] = gl.getUniformLocation(this.Program, uniName);
+                    Engine.ShaderVars[split[2]][i][vStructs[j].fields[k]] = null;
                   }
                 }
               }
@@ -176,6 +201,7 @@ Shader.prototype.compile = async function (name) {
               console.log('Matched uniform '+split[2]+'['+i+']'+' to basic type: '+split[1]);
               let uniName = split[2]+'['+i+']';
               this.Uniforms[split[2]][i] = gl.getUniformLocation(this.Program, uniName);
+              Engine.ShaderVars[split[2]][i] = null;
             }
           }
           console.groupEnd();
@@ -184,8 +210,25 @@ Shader.prototype.compile = async function (name) {
       else{
         //Check to see if the uniform has been added by the vertex shader.
         if(this.Uniforms[split[2]]==undefined){
-          this.Uniforms[split[2]] = gl.getUniformLocation(this.Program, split[2]);
-          console.log("Saved uniform location: "+split[2]);
+          this.Uniforms[split[2]] = {};
+          Engine.ShaderVars[split[2]] = {};
+          let Struct = false;
+          for(var j = 0; j < vStructs.length; j++){
+            if(split[1] == vStructs[j].name){
+              Struct = true;
+              for(var k = 0; k < vStructs[j].fields.length; k++){
+                let uniName = split[2]+'.'+vStructs[j].fields[k];
+                this.Uniforms[split[2]][vStructs[j].fields[k]] = gl.getUniformLocation(this.Program, uniName);
+                Engine.ShaderVars[split[2]][vStructs[j].fields[k]] = null;
+              }
+              console.log("Saved struct uniform location: "+split[2]);
+            }
+          }
+          if(!Struct){
+            this.Uniforms[split[2]] = gl.getUniformLocation(this.Program, split[2]);
+            Engine.ShaderVars[split[2]] = null;
+            console.log("Saved uniform location: "+split[2]);
+          }
         }
       }
     }, this);
@@ -240,4 +283,5 @@ async function Parse(url, gl){
 function Struct(name){
   this.name = name;
   this.fields = [];
+  this.types = [];
 }
