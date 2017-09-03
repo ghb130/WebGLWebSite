@@ -12,6 +12,7 @@ function main(){
   Engine.init();
   console.log("%c\nEngine initialization complete.\n\n", 'color: green');
   setTimeout(()=>{console.log(Engine.ShaderVars);}, 3000);
+  setTimeout(()=>{console.log(Engine.Shaders);}, 3000);
   Engine.World.Monkey = Engine.Objects.Monkey;
   Engine.Objects.Monkey.transform.setPos(0,0,-3);
   Engine.Objects.Monkey.transform.setAxisAngle(vec3.fromValues(0,1,0),Math.PI/4);

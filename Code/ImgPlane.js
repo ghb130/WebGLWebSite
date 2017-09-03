@@ -64,3 +64,14 @@ ImgPlane.prototype.build = function(){
   gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW);
   this.initialized = true;
 }
+//==============================================================================
+//set uniforms and draw settings
+//==============================================================================
+ImgPlane.prototype.draw = function(){
+  setUni(this.Shader, this);
+  gl.enable(gl.CULL_FACE);
+  gl.enable(gl.DEPTH_TEST);
+  gl.disable(gl.BLEND);
+  gl.depthMask(true);
+  gl.drawArrays(gl.TRIANGLES, 0, this.numVerts);
+}

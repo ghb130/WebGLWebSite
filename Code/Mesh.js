@@ -21,16 +21,13 @@ function Mesh(name, shader = "Unlit"){
 //set uniforms and draw settings
 //==============================================================================
 Mesh.prototype.draw = function(){
-  let count = 0;
-  for(var tex in this.Textures){
-  if(this.Textures.hasOwnProperty(tex)){
-    gl.activeTexture(gl["TEXTURE"+count.toString()]);
-    gl.bindTexture(gl.TEXTURE_2D, this.Textures[tex]);
-    Engine.ShaderVars["u_"+tex] = count;
-    count++;
-  }}
-
-
+  setUni(this.Shader, this);
+  gl.enable(gl.CULL_FACE);
+  gl.enable(gl.DEPTH_TEST);
+  gl.disable(gl.BLEND);
+  gl.depthMask(true);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,  this.Buffer.Index);
+  gl.drawElements(gl.TRIANGLES, this.Buffer.Index.numVerts, gl.UNSIGNED_SHORT, 0);
 }
 //==============================================================================
 //Loads mesh data form server

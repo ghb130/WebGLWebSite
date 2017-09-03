@@ -95,34 +95,8 @@ function EngineCore(){
         gl.bindBuffer(gl.ARRAY_BUFFER, obj.Buffer.normal);
         gl.vertexAttribPointer(Engine.Shaders[obj.Shader].Attributes.a_Normal, 3, gl.FLOAT, false, 0, 0);
       }
-      //Bind Uniforms
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, obj.Textures.Diffuse);
-      gl.uniform1i(Engine.Shaders[obj.Shader].Uniforms.u_Diffuse, 0);
-      gl.uniformMatrix4fv(Engine.Shaders[obj.Shader].Uniforms.u_MVPMatrix, false, Engine.Matrices.MVPMatrix);
-      //Draw
-      if(obj.type == 'obj'){
-        gl.enable(gl.CULL_FACE);
-        gl.enable(gl.DEPTH_TEST);
-        gl.disable(gl.BLEND);
-        gl.depthMask(true);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,  obj.Buffer.Index);
-        gl.drawElements(gl.TRIANGLES, obj.Buffer.Index.numVerts, gl.UNSIGNED_SHORT, 0);
-      }
-      else if (obj.type == 'text'){
-        gl.enable(gl.BLEND);
-        gl.disable(gl.CULL_FACE);
-        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-        gl.depthMask(false);
-        gl.drawArrays(gl.TRIANGLES, 0, obj.numVerts);
-      }
-      else if (obj.type == 'img'){
-        gl.enable(gl.CULL_FACE);
-        gl.enable(gl.DEPTH_TEST);
-        gl.disable(gl.BLEND);
-        gl.depthMask(true);
-        gl.drawArrays(gl.TRIANGLES, 0, obj.numVerts);
-      }
+      //Call draw
+      obj.draw();
     }}
   }
   //==============================================================================
@@ -221,5 +195,16 @@ function EngineCore(){
     }
     obj.transform.applyParent(Engine.Matrices.ModelMatrix);
     obj.transform.apply(Engine.Matrices.ModelMatrix);
+  }
+}
+//==============================================================================
+//Uniform setters per shader
+//==============================================================================
+function setUni(shader, obj){
+  if(shader == 'Unlit'){
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, obj.Textures.Diffuse);
+    gl.uniform1i(Engine.Shaders[obj.Shader].Uniforms.u_Diffuse, 0);
+    gl.uniformMatrix4fv(Engine.Shaders[obj.Shader].Uniforms.u_MVPMatrix, false, Engine.Matrices.MVPMatrix);
   }
 }
