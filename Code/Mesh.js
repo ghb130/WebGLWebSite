@@ -5,57 +5,52 @@
 //Properties:
 //
 //==============================================================================
-function Object(name, shader = "Unlit"){
-  this.Buffer = {};
-  this.Buffer.position = null;
-  this.Buffer.normal = null;
-  this.Buffer.uv = null;
-  this.Buffer.Index = null;
+function Mesh(name, shader = "Unlit"){
+  this.Buffer = {"position":null,
+                 "normal":null,
+                 "uv":null,
+                 "Index":null};
   this.Textures = {};
   this.tag = name;
   this.type = 'obj';
   this.transform = new Transform();
   this.Shader = shader;
-  this.instances = 0;
-  this.parent = null;
   this.initialized = false;
-  var Addr = "Resources/Models/"+name+".json";
-  var AddrTex = "Resources/Textures/"+name+"_diffuse.png";
+}
+//==============================================================================
+//set uniforms and draw settings
+//==============================================================================
+Mesh.prototype.draw = function(){
+  setUni(this.Shader, this);
+  gl.enable(gl.CULL_FACE);
+  gl.enable(gl.DEPTH_TEST);
+  gl.disable(gl.BLEND);
+  gl.depthMask(true);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,  this.Buffer.Index);
+  gl.drawElements(gl.TRIANGLES, this.Buffer.Index.numVerts, gl.UNSIGNED_SHORT, 0);
+}
+//==============================================================================
+//Loads mesh data form server
+//==============================================================================
+Mesh.prototype.load = function(){
+  var Addr = "Resources/Models/"+this.tag+".json";
+  var AddrTex = "Resources/Textures/"+this.tag+"_diffuse.png";
   console.log("Requesting: "+Addr);
   LoadMesh(Addr, this);
   console.log("Requesting: "+AddrTex);
-  LoadTex(AddrTex, "diffuse", this);
-}
-//==============================================================================
-//Object Intance function. Dont need to reload resources when we instance.
-//==============================================================================
-function ObjInst(name, shader = "Unlit"){
-  this.Buffer = {};
-  this.Buffer.position = null;
-  this.Buffer.normal = null;
-  this.Buffer.uv = null;
-  this.Buffer.Index = null;
-  this.Textures = {};
-  this.tag = name;
-  this.type = 'obj';
-  this.transform = new Transform();
-  this.Shader = shader;
-  this.initialized = false;
+  LoadTex(AddrTex, "Diffuse", this);
 }
 //==============================================================================
 //Request mesh data from server
 //==============================================================================
 function LoadMesh(Addr, obj){
-  var req = new XMLHttpRequest();
-  req.onreadystatechange = function(){
-    if(this.readyState == 4 && this.status == 200){
-      console.groupCollapsed("Receiving Mesh...");
-      console.log("Loading model: "+req.responseURL);
-      BindMesh(JSON.parse(req.responseText), obj);
-    }
-  };
-  req.open("GET", Addr, true);
-  req.send();
+  download(Addr)
+  .then((mesh)=>{
+    console.groupCollapsed("Receiving Mesh...");
+    console.log("Loading model: "+ Addr);
+    BindMesh(JSON.parse(mesh), obj);
+  })
+  .catch((err)=>{console.log(err);});
 }
 //==============================================================================
 //Do things with loaded mesh data

@@ -1,4 +1,4 @@
-requirejs(["Code/Utils", "Code/Shader", "Code/Object", "Code/ImgPlane", "Code/Text", "Code/Animation", "Code/Camera", "Code/Engine"], main);
+requirejs(["Code/Utils", "Code/Shader", "Code/Mesh", "Code/ImgPlane", "Code/Text", "Code/Animation", "Code/Camera", "Code/Engine"], main);
 //==============================================================================
 //MAIN - call engine code here
 //Program wide variables:
@@ -11,7 +11,8 @@ function main(){
   Engine = new EngineCore();
   Engine.init();
   console.log("%c\nEngine initialization complete.\n\n", 'color: green');
-
+  setTimeout(()=>{console.log(Engine.ShaderVars);}, 3000);
+  setTimeout(()=>{console.log(Engine.Shaders);}, 3000);
   Engine.World.Monkey = Engine.Objects.Monkey;
   Engine.Objects.Monkey.transform.setPos(0,0,-3);
   Engine.Objects.Monkey.transform.setAxisAngle(vec3.fromValues(0,1,0),Math.PI/4);
@@ -24,10 +25,10 @@ function main(){
 
   Engine.AnimPlayer.addAnim('Spin90',rotate);
 
-  var img = new ImgPlane('Profile', 0.8);
+/*  var img = new ImgPlane('Profile', 0.8);
   Engine.World.Img = img;
   Engine.World.Img.transform.setPos(-.55,1,-0.05);
-  Engine.World.Img.parent = Engine.World.Monkey;
+  Engine.World.Img.parent = Engine.World.Monkey;*/
 
 /*  var trans = new Transform();
   for (var k = -3; k <= 3; k=k+3){
@@ -84,7 +85,5 @@ function main(){
   rotate = new Keyframe(animInfRot);
 
   Engine.AnimPlayer.addAnim('TextSpin3', rotate);
-
-  console.groupCollapsed("Runtime Logging");
   Engine.Update();
 }
