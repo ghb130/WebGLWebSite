@@ -30,7 +30,7 @@ function main(){
   Engine.World.Img.transform.setPos(-.55,1,-0.05);
   Engine.World.Img.parent = Engine.World.Monkey;*/
 
-/*  var trans = new Transform();
+  var trans = new Transform();
   for (var k = -3; k <= 3; k=k+3){
     for (var j = -3; j <= 3; j=j+3){
       for (var i = 1; i < 10; i++){
@@ -39,7 +39,7 @@ function main(){
         Engine.World[instance].parent = Engine.World.Monkey;
       }
     }
-  }*/
+  }
 
   var string =
   `Hours`;
@@ -85,5 +85,6 @@ function main(){
   rotate = new Keyframe(animInfRot);
 
   Engine.AnimPlayer.addAnim('TextSpin3', rotate);
+  console.log(Engine.World);
   Engine.Update();
 }

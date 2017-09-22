@@ -12,7 +12,7 @@ function Camera(index){
   this.farClip = 100;
   this.index = index;
   this.setView = function(){
-    mat4.perspective(Engine.Matrices.MVPMatrix, this.fov, gl.viewportWidth/gl.viewportHeight, this.nearClip, this.farClip);
+    mat4.perspective(Engine.Matrices.MVPMatrix, this.fov, canvas.clientWidth/canvas.clientHeight, this.nearClip, this.farClip);
     mat4.lookAt(Engine.Matrices.TempMatrix, this.transform.position, this.forwardVec, this.upVec);
     mat4.multiply(Engine.Matrices.MVPMatrix, Engine.Matrices.MVPMatrix, Engine.Matrices.TempMatrix);
   }

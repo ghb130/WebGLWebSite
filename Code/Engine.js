@@ -41,10 +41,10 @@ function EngineCore(){
       Engine.Fonts['Verdana'] = new fontInfo('Verdana');
       this.Cameras.push(new Camera(this.Cameras.length));
       this.Cameras[0].transform.position = vec3.fromValues(0,0,3);
-      this.Matrices.ModelMatrix = mat4.create();
+      this.Matrices.ModelMatrix  = mat4.create();
       this.Matrices.NormalMatrix = mat4.create();
-      this.Matrices.MVPMatrix = mat4.create();
-      this.Matrices.TempMatrix = mat4.create();
+      this.Matrices.MVPMatrix    = mat4.create();
+      this.Matrices.TempMatrix   = mat4.create();
       gl.clearColor(0.3,0.3,0.3,1);
       gl.enable(gl.CULL_FACE);
       gl.enable(gl.DEPTH_TEST);
@@ -62,7 +62,7 @@ function EngineCore(){
   //==============================================================================
    this.renderFrame = function(){
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
     //Reset matrices
     mat4.identity(Engine.Matrices.ModelMatrix);
     //Set view to current active camera
@@ -109,8 +109,6 @@ function EngineCore(){
     inter = window.performance.now() - inter;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    gl.viewportWidth = window.innerWidth;
-    gl.viewportHeight = window.innerHeight;
     //Call any runtime logic here
     frame = requestAnimationFrame(Engine.Update, canvas);
     Engine.renderFrame();
@@ -169,7 +167,8 @@ function EngineCore(){
   //Take an object and instance it into the world
   //==============================================================================
   this.Instantiate = function(obj, trans = null){
-    var instanceName = (obj.tag)+((obj.instances)++).toString();
+    var instanceName = (obj.tag)+'.'+((obj.numinstances)++).toString();
+    obj.instances.push(instanceName);
     this.World[instanceName] = this.Duplicate(obj, instanceName, trans);
     return instanceName;
   }
@@ -180,10 +179,10 @@ function EngineCore(){
     var newObj = new Mesh(name);
     newObj.Buffer = obj.Buffer;
     newObj.Textures = obj.Textures;
-    if(trans != null){newObj.transform.copy(trans);}
+    if(trans != undefined){newObj.transform.copy(trans);}
     else{newObj.transform.copy(obj.transform);}
     newObj.Shader = obj.Shader;
-    newObj.initialized = true;
+    newObj.initialized = obj.initialized;
     return newObj;
   }
   //==============================================================================

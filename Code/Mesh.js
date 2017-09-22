@@ -10,12 +10,13 @@ function Mesh(name, shader = "Unlit"){
                  "normal":null,
                  "uv":null,
                  "Index":null};
-  this.Textures = {};
-  this.tag = name;
-  this.type = 'obj';
-  this.transform = new Transform();
-  this.Shader = shader;
-  this.initialized = false;
+  this.Textures     = {};
+  this.instances    = [];
+  this.numinstances = 0;
+  this.tag          = name;
+  this.transform    = new Transform();
+  this.Shader       = shader;
+  this.initialized  = false;
 }
 //==============================================================================
 //set uniforms and draw settings
@@ -28,6 +29,19 @@ Mesh.prototype.draw = function(){
   gl.depthMask(true);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,  this.Buffer.Index);
   gl.drawElements(gl.TRIANGLES, this.Buffer.Index.numVerts, gl.UNSIGNED_SHORT, 0);
+}
+//==============================================================================
+//Update derivative instances with changes made to source
+//==============================================================================
+Mesh.prototype.propogateChanges = function(){
+  this.instances.forEach(function(element){
+    if(Engine.World[element]!=undefined){
+      Engine.World[element].Buffer = this.Buffer;
+      Engine.World[element].Textures = this.Textures;
+      Engine.World[element].Shader = this.Shader;
+      Engine.World[element].initialized = this.initialized;
+    }
+  }, this);
 }
 //==============================================================================
 //Loads mesh data form server
@@ -79,5 +93,6 @@ function BindMesh(Mesh, obj){
   obj.Buffer.Index.numVerts = Mesh.data.index.array.length;
   console.log("Mesh initialized.");
   obj.initialized = true;
+  obj.propogateChanges();
   console.groupEnd();
 }
